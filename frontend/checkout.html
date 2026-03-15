@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Bena Kouture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav-bar">
+    <a href="home.html" class="nav-logo">Bena Kouture</a>
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="#" id="profileLink">Profile</a>
+    </div>
+    <div class="nav-actions">
+      <a href="cart.html" class="icon-btn" title="Cart">🛒</a>
+      <button type="button" class="icon-btn" id="logoutBtn" title="Logout">⎋</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div id="checkoutFormWrap">
+      <section class="section">
+        <h2 class="section-title">Checkout</h2>
+        <div class="form-page">
+          <form id="checkoutForm">
+            <div class="form-group">
+              <label for="customerName">Full Name</label>
+              <input type="text" id="customerName" name="customerName" required placeholder="Your full name">
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required placeholder="Your phone number">
+            </div>
+            <div class="form-group">
+              <label for="deliveryAddress">Delivery Address</label>
+              <textarea id="deliveryAddress" name="deliveryAddress" required placeholder="Full delivery address"></textarea>
+            </div>
+            <p style="margin-bottom: 12px; color: var(--text-muted);">Order total: ₦<strong id="orderTotal">0</strong></p>
+            <button type="submit" class="btn btn-primary">Submit Order</button>
+            <p id="checkoutError" style="color: #b33; font-size: 0.9rem; margin-top: 12px; display: none;"></p>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <div id="confirmationWrap" class="confirmation" style="display: none;">
+      <h2>Thank You</h2>
+      <p>Your order has been received. We will contact you shortly regarding delivery.</p>
+      <a href="shop.html" class="btn">Continue Shopping</a>
+    </div>
+
+    <footer class="page-footer">
+      &copy; Bena Kouture. Your Queenship is Our Happiness.
+    </footer>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('redirect');
+    setActiveNav();
+    document.getElementById('profileLink').href = isAdmin() ? 'admin.html' : '#';
+    document.getElementById('profileLink').textContent = isAdmin() ? 'Admin' : 'Profile';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      setToken(null);
+      setUser(null);
+      window.location.href = 'login.html';
+    });
+
+    const cart = getCart();
+    if (cart.length === 0) {
+      window.location.href = 'cart.html';
+    }
+    document.getElementById('orderTotal').textContent = cartTotal().toLocaleString();
+
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('checkoutError');
+      errEl.style.display = 'none';
+      const customerName = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+      const items = getCart().map(i => ({ productId: i.productId, quantity: i.quantity }));
+      try {
+        await fetchApi('/orders', {
+          method: 'POST',
+          body: JSON.stringify({ customerName, phone, deliveryAddress, items })
+        });
+        setCart([]);
+        document.getElementById('checkoutFormWrap').style.display = 'none';
+        document.getElementById('confirmationWrap').style.display = 'block';
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not submit order';
+        errEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

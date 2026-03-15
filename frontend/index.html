@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bena Kouture - Welcome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="welcome-screen">
+    <div class="typing-container">
+      <div class="typing-text" id="typingText"></div>
+      <span class="cursor" id="cursor"></span>
+    </div>
+  </div>
+  <script>
+    const phrases = [
+      'Welcome to Bena Kouture',
+      'Your Queenship is Our Happiness',
+      'Elegance Begins Here'
+    ];
+    const el = document.getElementById('typingText');
+    const cursor = document.getElementById('cursor');
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const typeSpeed = 80;
+    const deleteSpeed = 50;
+    const pauseAfterType = 2000;
+    const pauseAfterDelete = 600;
+
+    function type() {
+      const phrase = phrases[phraseIndex];
+      if (isDeleting) {
+        charIndex--;
+        el.textContent = phrase.substring(0, charIndex);
+        if (charIndex === 0) {
+          if (phraseIndex === phrases.length - 1) {
+            cursor.style.visibility = 'hidden';
+            setTimeout(() => { window.location.href = 'login.html'; }, 400);
+            return;
+          }
+          phraseIndex++;
+          charIndex = 0;
+          isDeleting = false;
+          setTimeout(type, pauseAfterDelete);
+        } else {
+          setTimeout(type, deleteSpeed);
+        }
+      } else {
+        charIndex++;
+        el.textContent = phrase.substring(0, charIndex);
+        if (charIndex === phrase.length) {
+          isDeleting = true;
+          setTimeout(type, pauseAfterType);
+        } else {
+          setTimeout(type, typeSpeed);
+        }
+      }
+    }
+
+    setTimeout(type, 400);
+  </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Bena Kouture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="admin-bar">
+    <span>Bena Kouture — Admin</span>
+    <div>
+      <a href="home.html">Back to Site</a>
+      <button type="button" class="btn" id="logoutBtn" style="margin-left: 12px; padding: 6px 12px; background: rgba(255,255,255,0.2); color: #fff;">Logout</button>
+    </div>
+  </div>
+
+  <main class="main-content">
+    <section class="section">
+      <h2 class="section-title">Manage Products</h2>
+      <button type="button" class="btn" id="addProductBtn" style="margin-bottom: 24px; background: var(--wine); color: var(--white); padding: 10px 20px;">+ Add Product</button>
+      <div class="products-grid" id="adminProductsGrid"></div>
+    </section>
+  </main>
+
+  <div id="productModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 24px;">
+    <div style="background: var(--white); border-radius: var(--radius); max-width: 440px; width: 100%; padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+      <h3 style="margin-bottom: 20px; color: var(--wine);" id="modalTitle">Add Product</h3>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-group">
+          <label for="productName">Product Name</label>
+          <input type="text" id="productName" required>
+        </div>
+        <div class="form-group">
+          <label for="productDesc">Description</label>
+          <textarea id="productDesc" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="productPrice">Price (₦)</label>
+          <input type="number" id="productPrice" required min="0" step="0.01">
+        </div>
+        <div class="form-group" id="imageGroup">
+          <label>Product Image</label>
+          <input type="file" id="productImage" accept="image/*">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Save</button>
+          <button type="button" class="btn" id="cancelModal" style="border: 1px solid rgba(114,47,55,0.3); color: var(--wine);">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('redirect');
+    if (!isAdmin()) {
+      window.location.href = 'home.html';
+      throw new Error('admin only');
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      setToken(null);
+      setUser(null);
+      window.location.href = 'login.html';
+    });
+
+    const API_BASE = 'http://localhost:3000/api';
+    const modal = document.getElementById('productModal');
+    const form = document.getElementById('productForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const productId = document.getElementById('productId');
+    const productName = document.getElementById('productName');
+    const productDesc = document.getElementById('productDesc');
+    const productPrice = document.getElementById('productPrice');
+    const productImage = document.getElementById('productImage');
+
+    function showModal(editProduct = null) {
+      productId.value = '';
+      productName.value = '';
+      productDesc.value = '';
+      productPrice.value = '';
+      productImage.value = '';
+      if (editProduct) {
+        modalTitle.textContent = 'Edit Product';
+        productId.value = editProduct._id;
+        productName.value = editProduct.name;
+        productDesc.value = editProduct.description || '';
+        productPrice.value = editProduct.price;
+      } else {
+        modalTitle.textContent = 'Add Product';
+      }
+      modal.style.display = 'flex';
+    }
+
+    document.getElementById('cancelModal').addEventListener('click', () => { modal.style.display = 'none'; });
+    document.getElementById('addProductBtn').addEventListener('click', () => showModal());
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = productId.value;
+      const name = productName.value.trim();
+      const description = productDesc.value.trim();
+      const price = parseFloat(productPrice.value);
+      const token = getToken();
+      const hasFile = productImage.files[0];
+
+      try {
+        let res;
+        if (hasFile) {
+          const body = new FormData();
+          body.append('name', name);
+          body.append('description', description);
+          body.append('price', price);
+          body.append('image', hasFile);
+          res = await fetch(API_BASE + '/products' + (id ? '/' + id : ''), {
+            method: id ? 'PUT' : 'POST',
+            headers: { Authorization: 'Bearer ' + token },
+            body
+          });
+        } else {
+          res = await fetch(API_BASE + '/products' + (id ? '/' + id : ''), {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ name, description, price })
+          });
+        }
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || res.statusText);
+        }
+        modal.style.display = 'none';
+        loadProducts();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    async function loadProducts() {
+      try {
+        const products = await fetchApi('/products');
+        const grid = document.getElementById('adminProductsGrid');
+        grid.innerHTML = products.map(p => {
+          const imgSrc = p.image ? API_BASE.replace('/api','') + p.image : 'https://via.placeholder.com/260x346/722F37/ffffff?text=No+Image';
+          return `
+            <div class="product-card" data-id="${p._id}">
+              <div class="img-wrap"><img src="${imgSrc}" alt="${p.name}"></div>
+              <div class="info">
+                <div class="name">${p.name}</div>
+                <div class="desc">${p.description || ''}</div>
+                <div class="price">₦${Number(p.price).toLocaleString()}</div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn edit-btn" style="flex:1; padding: 8px; background: var(--wine); color: var(--white);">Edit</button>
+                  <button type="button" class="btn delete-btn" style="padding: 8px 12px; border: 1px solid #b33; color: #b33;">Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        grid.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const card = btn.closest('.product-card');
+            const id = card.dataset.id;
+            const prod = products.find(x => x._id === id);
+            if (prod) showModal(prod);
+          });
+        });
+        grid.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Delete this product?')) return;
+            const id = btn.closest('.product-card').dataset.id;
+            try {
+              await fetchApi('/products/' + id, { method: 'DELETE' });
+              loadProducts();
+            } catch (err) {
+              alert(err.message);
+            }
+          });
+        });
+      } catch (e) {
+        document.getElementById('adminProductsGrid').innerHTML = '<p style="color: var(--text-muted);">Failed to load products.</p>';
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

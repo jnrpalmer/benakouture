@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Bena Kouture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="form-page fade-in">
+    <h1>Bena Kouture</h1>
+    <p class="link-row" style="margin-bottom: 16px;">Your Queenship is Our Happiness</p>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary">Sign In</button>
+      <p id="error" style="color: #b33; font-size: 0.9rem; margin-top: 12px; display: none;"></p>
+    </form>
+    <p class="link-row">Don't have an account? <a href="#" id="showRegister">Register</a></p>
+  </div>
+
+  <div class="form-page fade-in" id="registerSection" style="display: none;">
+    <h1>Create Account</h1>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="regName">Name</label>
+        <input type="text" id="regName" name="name" required placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label for="regEmail">Email</label>
+        <input type="email" id="regEmail" name="email" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label for="regPassword">Password</label>
+        <input type="password" id="regPassword" name="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary">Register</button>
+      <p id="regError" style="color: #b33; font-size: 0.9rem; margin-top: 12px; display: none;"></p>
+    </form>
+    <p class="link-row">Already have an account? <a href="#" id="showLogin">Sign In</a></p>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (redirectIfLoggedIn()) exit;
+
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const registerSection = document.getElementById('registerSection');
+    const showRegister = document.getElementById('showRegister');
+    const showLogin = document.getElementById('showLogin');
+    const errorEl = document.getElementById('error');
+    const regErrorEl = document.getElementById('regError');
+
+    showRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('.form-page').style.display = 'none';
+      registerSection.style.display = 'block';
+      regErrorEl.style.display = 'none';
+    });
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerSection.style.display = 'none';
+      document.querySelector('.form-page').style.display = 'block';
+      errorEl.style.display = 'none';
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      try {
+        const data = await fetchApi('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password })
+        });
+        setToken(data.token);
+        setUser(data.user);
+        window.location.href = 'home.html';
+      } catch (err) {
+        errorEl.textContent = err.message || 'Login failed';
+        errorEl.style.display = 'block';
+      }
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      regErrorEl.style.display = 'none';
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      try {
+        const data = await fetchApi('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ name, email, password })
+        });
+        setToken(data.token);
+        setUser(data.user);
+        window.location.href = 'home.html';
+      } catch (err) {
+        regErrorEl.textContent = err.message || 'Registration failed';
+        regErrorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
