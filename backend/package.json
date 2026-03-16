@@ -4,8 +4,8 @@
   "description": "Bena Kouture API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+  "start": "node backend/server.js"
+}
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
