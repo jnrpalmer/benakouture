@@ -26,5 +26,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.get('/', (req, res) =>{
+    res,sendfile(path.join(__dirname, '../frontend/index.html'))
+})
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
