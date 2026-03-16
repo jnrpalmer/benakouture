@@ -1,17 +1,27 @@
 {
-  "name": "benakouture",
+  "name": "myfirstproduct",
   "version": "1.0.0",
-  "description": "Bena Kouture Fashion Website",
-  "main": "backend/server.js",
+  "description": "Full-stack e-commerce fashion website. Wine red and white theme, mid-level fashion brand style.",
+  "main": "index.js",
   "scripts": {
-    "scripts": {
-  "start": "node backend/server.js"
-}
+    "start": "node backend/server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jnrpalmer/benakouture.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jnrpalmer/benakouture/issues"
+  },
+  "homepage": "https://github.com/jnrpalmer/benakouture#readme",
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.0",
-    "express": "^4.18.2",
-    "mongoose": "^8.0.0"
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0"
   }
 }
