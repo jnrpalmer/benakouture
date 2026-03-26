@@ -60,4 +60,18 @@ router.delete('/delete-account', auth, async (req, res) => {
   }
 });
 
+router.post('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!(await user.comparePassword(currentPassword)))
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    user.password = newPassword;
+    await user.save();
+    res.json({ message: 'Password updated' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
