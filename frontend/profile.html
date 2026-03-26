@@ -1,0 +1,82 @@
+DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Bena Kouture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="home.html" class="nav-logo">Bena Kouture</a>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="profile.html" class="active">Profile</a>
+      <a href="cart.html">🛒 Cart</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </div>
+  </nav>
+
+  <main class="main-content" style="padding: 100px 24px 60px;">
+    <div style="max-width: 500px; margin: 0 auto;">
+
+      <h1 style="font-size: 1.8rem; color: var(--wine); margin-bottom: 32px;">My Profile</h1>
+
+      <div style="background: var(--off-white); border-radius: var(--radius); padding: 24px; margin-bottom: 24px;">
+        <p style="margin-bottom: 8px;"><strong>Name:</strong> <span id="profileName">—</span></p>
+        <p><strong>Email:</strong> <span id="profileEmail">—</span></p>
+      </div>
+
+      <button id="deleteAccountBtn" class="btn" style="background: #b33; color: white; width: 100%; padding: 14px;">
+        Delete Account
+      </button>
+
+      <p id="deleteMsg" style="color: #b33; margin-top: 12px; display: none;"></p>
+
+    </div>
+  </main>
+
+  <footer style="text-align: center; padding: 24px; font-size: 0.85rem; color: var(--text-muted);">
+    &copy; Bena Kouture. Your Queenship is Our Happiness.
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Redirect if not logged in
+    if (!requireAuth()) {}
+
+    // Load user info
+    const user = getUser();
+    if (user) {
+      document.getElementById('profileName').textContent = user.name || '—';
+      document.getElementById('profileEmail').textContent = user.email || '—';
+    }
+
+    // Delete account
+    document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+      const confirm1 = confirm('Are you sure you want to delete your account? This cannot be undone.');
+      if (!confirm1) return;
+
+      try {
+        await fetchApi('/auth/delete-account', { method: 'DELETE' });
+        setToken(null);
+        setUser(null);
+        alert('Your account has been deleted.');
+        window.location.href = 'login.html';
+      } catch (e) {
+        const msg = document.getElementById('deleteMsg');
+        msg.textContent = e.message || 'Failed to delete account.';
+        msg.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -112,3 +112,13 @@ if (hamburger) {
     document.querySelector('.nav-links').classList.toggle('mobile-open');
   });
 }
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await fetchApi('/auth/logout', { method: 'POST' }).catch(() => {});
+    setToken(null);
+    setUser(null);
+    window.location.href = 'login.html';
+  });
+}

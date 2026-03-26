@@ -45,4 +45,19 @@ router.get('/me', auth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// Logout - just handled frontend side, but this confirms token is valid
+router.post('/logout', auth, (req, res) => {
+  res.json({ message: 'Logged out successfully' });
+});
+
+// Delete account
+router.delete('/delete-account', auth, async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user._id);
+    res.json({ message: 'Account deleted successfully' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
