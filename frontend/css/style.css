@@ -506,7 +506,7 @@ button:active, .btn:active {
   .nav-links {
     display: none;
   }
-  .nav-links.mobile-open {
+   .nav-links.mobile-open {
     display: flex;
     position: fixed;
     top: 60px;
@@ -516,6 +516,14 @@ button:active, .btn:active {
     flex-direction: column;
     padding: 16px;
     box-shadow: var(--shadow);
+  }
+  
+  .hamburger {
+    display: block;
+    font-size: 1.5rem;
+    background: none;
+    color: var(--wine);
+    cursor: pointer;
   }
   .hero { padding: 60px 16px 80px; }
   .section { padding: 32px 16px; }

@@ -106,3 +106,9 @@ function setActiveNav() {
     a.classList.toggle('active', href === path || (path === '' && href === 'index.html'));
   });
 }
+const hamburger = document.getElementById('hamburger');
+if (hamburger) {
+  hamburger.addEventListener('click', () => {
+    document.querySelector('.nav-links').classList.toggle('mobile-open');
+  });
+}
