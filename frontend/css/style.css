@@ -1,3 +1,17 @@
+body.dark-mode {
+  --white: #1a1212;
+  --off-white: #231818;
+  --text: #f0e8e8;
+  --text-muted: #a08080;
+  --card-bg: #2a1c1c;
+  --body-bg: #140e0e;
+  --border: #3a2020;
+  --shadow: 0 2px 20px rgba(0,0,0,0.4);
+  background: #140e0e;
+  color: #f0e8e8;
+}
+
+
 :root {
   --wine: #722F37;
   --wine-dark: #5a262c;
