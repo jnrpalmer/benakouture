@@ -8,10 +8,12 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
+const contactRoutes = require('./routes/contact');
 
 connectDB();
 
 const app = express();
+app.use('/api/contact', contactRoutes);
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));

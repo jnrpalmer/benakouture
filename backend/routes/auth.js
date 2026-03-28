@@ -74,4 +74,22 @@ router.post('/change-password', auth, async (req, res) => {
   }
 });
 
+// Get all users (admin only)
+router.get('/users', auth, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+    const users = await User.find({}).select('-password');
+    res.json(users);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Admin delete user
+router.delete('/admin/delete-user/:id', auth, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

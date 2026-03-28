@@ -42,4 +42,12 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+router.get('/all', auth, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+    const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
