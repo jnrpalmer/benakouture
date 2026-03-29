@@ -13,7 +13,6 @@ const contactRoutes = require('./routes/contact');
 connectDB();
 
 const app = express();
-app.use('/api/contact', contactRoutes);
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
@@ -26,12 +25,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Serve frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // SPA fallback
-app.get('*', (req, res) => {
+app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
