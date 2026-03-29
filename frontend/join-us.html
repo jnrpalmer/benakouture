@@ -539,9 +539,6 @@
   <script>
     if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
 
-    const hamburger = document.getElementById('hamburger');
-    if (hamburger) hamburger.addEventListener('click', () => document.querySelector('.nav-links').classList.toggle('mobile-open'));
-
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', async () => {
