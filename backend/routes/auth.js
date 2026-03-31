@@ -19,6 +19,7 @@ router.post('/login', async (req, res) => {
     );
     res.json({ token, user: { id: user._id, email: user.email, name: user.name, isAdmin: user.isAdmin } });
   } catch (e) {
+    console.error('Register error:', e.message, e.stack);
     res.status(500).json({ error: e.message });
   }
 });
