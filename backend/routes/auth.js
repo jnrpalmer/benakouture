@@ -93,4 +93,10 @@ router.delete('/admin/delete-user/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+router.get('/generate-hash', async (req, res) => {
+  const bcrypt = require('bcryptjs');
+  const hash = await bcrypt.hash('2007@Kobbie', 10);
+  res.json({ hash });
+});
+
 module.exports = router;
