@@ -539,15 +539,6 @@
   <script>
     if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        await fetchApi('/auth/logout', { method: 'POST' }).catch(() => {});
-        setToken(null); setUser(null);
-        window.location.href = 'login.html';
-      });
-    }
-
     // Radio options styling
     document.querySelectorAll('.radio-option').forEach(label => {
       label.addEventListener('click', () => {
