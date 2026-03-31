@@ -51,7 +51,7 @@
 
   <script src="js/app.js"></script>
   <script>
-    if (redirectIfLoggedIn()) exit;
+    if (redirectIfLoggedIn()) throw new Error('redirect');
 
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
