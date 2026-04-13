@@ -1,45 +1,92 @@
-<script src="js/app.js"></script>
-<script>
-  if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
-  if (!requireAuth()) throw new Error('redirect');
-  setActiveNav();
-  const addBtn = document.getElementById('addItemBtn');
-  if (isAdmin() && addBtn) addBtn.style.display = 'inline-block';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - Bena Kouture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav-bar">
+    <a href="home.html" class="nav-logo">Bena Kouture</a>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="shop.html" class="active">Shop</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="exhibition.html">Exhibition</a>
+      <a href="join-us.html">Join Us</a>
+      <a href="profile.html">Profile</a>
+      <a href="cart.html">🛒 Cart</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </div>
+  </nav>
 
-  async function loadProducts() {
-    try {
-      const products = await fetchApi('/products');
-      const grid = document.getElementById('productsGrid');
-      const empty = document.getElementById('emptyState');
-      if (products.length === 0) {
-        grid.style.display = 'none';
-        empty.style.display = 'block';
-        return;
-      }
-      empty.style.display = 'none';
-      grid.style.display = 'grid';
-      grid.innerHTML = products.map(p => `
-        <article class="product-card slide-up">
-          <div class="img-wrap">
-            <img src="${p.image ? 'https://benakouture.onrender.com' + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'}" alt="${p.name}">
-          </div>
-          <div class="info">
-            <div class="name">${p.name}</div>
-            <div class="desc">${p.description || ''}</div>
-            <div class="price">₦${Number(p.price).toLocaleString()}</div>
-            <button type="button" class="btn add-cart" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">Add to Cart</button>
-          </div>
-        </article>
-      `).join('');
-      grid.querySelectorAll('.add-cart').forEach(btn => {
-        btn.addEventListener('click', () => {
-          addToCart({ _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' });
-          alert('Added to cart');
+  <main class="main-content">
+    <section class="section">
+      <h2 class="section-title">Shop All</h2>
+      <div id="productSection">
+        <div class="empty-state" id="emptyState">
+          <p>No products yet.</p>
+          <a href="admin.html" class="btn" id="addItemBtn" style="display:none;">+ Add Item</a>
+        </div>
+        <div class="products-grid" id="productsGrid" style="display:none;"></div>
+      </div>
+    </section>
+    <footer class="page-footer">
+      &copy; Bena Kouture. Your Queenship is Our Happiness.
+    </footer>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
+    if (!requireAuth()) throw new Error('redirect');
+    setActiveNav();
+    const addBtn = document.getElementById('addItemBtn');
+    if (isAdmin() && addBtn) addBtn.style.display = 'inline-block';
+
+    async function loadProducts() {
+      try {
+        const products = await fetchApi('/products');
+        const grid = document.getElementById('productsGrid');
+        const empty = document.getElementById('emptyState');
+        if (products.length === 0) {
+          grid.style.display = 'none';
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        grid.style.display = 'grid';
+        grid.innerHTML = products.map(p => `
+          <article class="product-card slide-up">
+            <div class="img-wrap">
+              <img src="${p.image ? 'https://benakouture.onrender.com' + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'}" alt="${p.name}">
+            </div>
+            <div class="info">
+              <div class="name">${p.name}</div>
+              <div class="desc">${p.description || ''}</div>
+              <div class="price">₦${Number(p.price).toLocaleString()}</div>
+              <button type="button" class="btn add-cart" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">Add to Cart</button>
+            </div>
+          </article>
+        `).join('');
+        grid.querySelectorAll('.add-cart').forEach(btn => {
+          btn.addEventListener('click', () => {
+            addToCart({ _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' });
+            alert('Added to cart!');
+          });
         });
-      });
-    } catch (e) {
-      document.getElementById('emptyState').innerHTML = '<p>Unable to load products.</p>';
+      } catch (e) {
+        const empty = document.getElementById('emptyState');
+        if (empty) empty.innerHTML = '<p>Unable to load products.</p>';
+      }
     }
-  }
-  loadProducts();
-</script>
+    loadProducts();
+  </script>
+</body>
+</html>
