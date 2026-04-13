@@ -3,7 +3,8 @@
   if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
   if (!requireAuth()) throw new Error('redirect');
   setActiveNav();
-  if (isAdmin()) document.getElementById('addItemBtn').style.display = 'inline-block';
+  const addBtn = document.getElementById('addItemBtn');
+  if (isAdmin() && addBtn) addBtn.style.display = 'inline-block';
 
   async function loadProducts() {
     try {
