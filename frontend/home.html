@@ -14,7 +14,7 @@
     <a href="home.html" class="nav-logo">Bena Kouture</a>
     <button class="hamburger" id="hamburger">&#9776;</button>
     <div class="nav-links">
-      <a href="home.html">Home</a>
+      <a href="home.html" class="active">Home</a>
       <a href="shop.html">Shop</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
@@ -25,6 +25,7 @@
       <a href="#" id="logoutBtn">Logout</a>
     </div>
   </nav>
+
   <main class="main-content">
     <section class="hero">
       <h1>Bena Kouture</h1>
@@ -37,9 +38,8 @@
       <div id="productSection">
         <div class="empty-state" id="emptyState">
           <p>No products yet.</p>
-          <button type="button" class="btn" id="addItemBtn" style="display: none;">+ Add Item</button>
         </div>
-        <div class="products-grid" id="productsGrid" style="display: none;"></div>
+        <div class="products-grid" id="productsGrid" style="display:none;"></div>
       </div>
     </section>
 
@@ -50,62 +50,49 @@
 
   <script src="js/app.js"></script>
   <script>
+    if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
     if (!requireAuth()) throw new Error('redirect');
-
     setActiveNav();
-    document.getElementById('profileLink').href = isAdmin() ? 'admin.html' : '#';
-    document.getElementById('profileLink').textContent = isAdmin() ? 'Admin' : 'Profile';
 
-    if (isAdmin()) document.getElementById('addItemBtn').style.display = 'inline-block';
-    document.getElementById('addItemBtn').addEventListener('click', () => window.location.href = 'admin.html');
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      setToken(null);
-      setUser(null);
-      window.location.href = 'login.html';
-    });
-
-    const API_BASE = 'http://localhost:3000/api';
-    async function loadProducts() {
+    async function loadFeatured() {
       try {
         const products = await fetchApi('/products');
+        const featured = products.filter(p => p.featured === true);
+        const display = featured.length > 0 ? featured : products.slice(0, 4);
         const grid = document.getElementById('productsGrid');
         const empty = document.getElementById('emptyState');
-        if (products.length === 0) {
+        if (display.length === 0) {
           grid.style.display = 'none';
           empty.style.display = 'block';
           return;
         }
         empty.style.display = 'none';
         grid.style.display = 'grid';
-        grid.innerHTML = products.map(p => `
+        grid.innerHTML = display.map(p => `
           <article class="product-card slide-up">
             <div class="img-wrap">
-              <img src="${p.image ? API_BASE.replace('/api','') + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'}" alt="${p.name}">
+              <img src="${p.image ? 'https://benakouture.onrender.com' + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'}" alt="${p.name}">
             </div>
             <div class="info">
               <div class="name">${p.name}</div>
               <div class="desc">${p.description || ''}</div>
-              <div class="price">₦${Number(p.price).toLocaleString()}</div>
+              <div class="price">₵${Number(p.price).toLocaleString()}</div>
               <button type="button" class="btn add-cart" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">Add to Cart</button>
             </div>
           </article>
         `).join('');
         grid.querySelectorAll('.add-cart').forEach(btn => {
           btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
-            const price = btn.dataset.price;
-            const image = btn.dataset.image || '';
-            addToCart({ _id: id, name, price: Number(price), image });
-            alert('Added to cart');
+            addToCart({ _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' });
+            alert('Added to cart!');
           });
         });
       } catch (e) {
-        document.getElementById('emptyState').innerHTML = '<p>Unable to load products.</p>';
+        const empty = document.getElementById('emptyState');
+        if (empty) empty.innerHTML = '<p>Unable to load products.</p>';
       }
     }
-    loadProducts();
+    loadFeatured();
   </script>
 </body>
 </html>

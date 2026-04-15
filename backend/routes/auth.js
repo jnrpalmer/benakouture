@@ -93,24 +93,11 @@ router.delete('/admin/delete-user/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.get('/generate-hash', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const hash = await bcrypt.hash('2007@Kobbie', 10);
   res.json({ hash });
-});
 
 
-router.post('/reset-password-direct', async (req, res) => {
-  try {
-    const { email, newPassword } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    user.password = newPassword;
-    await user.save();
-    res.json({ message: 'Password reset successfully' });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+
 
 module.exports = router;
