@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -20,8 +21,8 @@
       <a href="contact.html">Contact</a>
       <a href="exhibition.html">Exhibition</a>
       <a href="join-us.html">Join Us</a>
-      <a href="profile.html" id="profileLink">Profile</a>
-      <a href="cart.html">🛒 Cart</a>
+      <a href="profile.html">Profile</a>
+      <a href="cart.html">Cart</a>
       <a href="#" id="logoutBtn">Logout</a>
     </div>
   </nav>
@@ -44,7 +45,7 @@
               <label for="deliveryAddress">Delivery Address</label>
               <textarea id="deliveryAddress" name="deliveryAddress" required placeholder="Full delivery address"></textarea>
             </div>
-            <p style="margin-bottom: 12px; color: var(--text-muted);">Order total: ₦<strong id="orderTotal">0</strong></p>
+            <p style="margin-bottom: 12px; color: var(--text-muted);">Order total: &#8373;<strong id="orderTotal">0</strong></p>
             <button type="submit" class="btn btn-primary">Submit Order</button>
             <p id="checkoutError" style="color: #b33; font-size: 0.9rem; margin-top: 12px; display: none;"></p>
           </form>
@@ -52,37 +53,29 @@
       </section>
     </div>
 
-    <div id="confirmationWrap" class="confirmation" style="display: none;">
-      <h2>Thank You</h2>
-      <p>Your order has been received. We will contact you shortly regarding delivery.</p>
-      <a href="shop.html" class="btn">Continue Shopping</a>
-    </div>
+```
+<div id="confirmationWrap" class="confirmation" style="display: none; text-align:center; padding: 60px 24px;">
+  <h2 style="font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--wine); margin-bottom:16px;">Thank You!</h2>
+  <p style="margin-bottom:24px;">Your order has been received. We will contact you shortly regarding delivery.</p>
+  <a href="shop.html" class="btn">Continue Shopping</a>
+</div>
 
-    <footer class="page-footer">
-      &copy; Bena Kouture. Your Queenship is Our Happiness.
-    </footer>
+<footer class="page-footer">
+  &copy; Bena Kouture. Your Queenship is Our Happiness.
+</footer>
+```
+
   </main>
 
-  if (localStorage.getItem('bena_dark') === 'true') {
-    document.body.classList.add('dark-mode');
-  }
-
   <script src="js/app.js"></script>
+
   <script>
+    if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
     if (!requireAuth()) throw new Error('redirect');
     setActiveNav();
-    document.getElementById('profileLink').href = isAdmin() ? 'admin.html' : '#';
-    document.getElementById('profileLink').textContent = isAdmin() ? 'Admin' : 'Profile';
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      setToken(null);
-      setUser(null);
-      window.location.href = 'login.html';
-    });
 
     const cart = getCart();
-    if (cart.length === 0) {
-      window.location.href = 'cart.html';
-    }
+    if (cart.length === 0) window.location.href = 'cart.html';
     document.getElementById('orderTotal').textContent = cartTotal().toLocaleString();
 
     document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
@@ -107,5 +100,6 @@
       }
     });
   </script>
+
 </body>
 </html>

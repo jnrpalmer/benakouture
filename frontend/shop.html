@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,6 +9,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .product-card { position: relative; }
+    .product-btn-row {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .btn-buy {
+      flex: 1; padding: 10px; background: var(--wine);
+      color: white; border: none; border-radius: 8px;
+      font-family: inherit; font-size: 0.85rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-buy:hover { background: var(--wine-dark); }
+    .btn-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      border: 1px solid rgba(114,47,55,0.3);
+      background: none; cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; color: var(--text);
+    }
+    .btn-icon:hover { background: rgba(114,47,55,0.1); border-color: var(--wine); }
+    .btn-icon.wishlisted { color: #e06060; border-color: #e06060; }
+  </style>
 </head>
 <body>
   <nav class="nav-bar">
@@ -21,7 +44,7 @@
       <a href="exhibition.html">Exhibition</a>
       <a href="join-us.html">Join Us</a>
       <a href="profile.html">Profile</a>
-      <a href="cart.html">🛒 Cart</a>
+      <a href="cart.html">Cart</a>
       <a href="#" id="logoutBtn">Logout</a>
     </div>
   </nav>
@@ -43,12 +66,29 @@
   </main>
 
   <script src="js/app.js"></script>
+
   <script>
     if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
     if (!requireAuth()) throw new Error('redirect');
     setActiveNav();
     const addBtn = document.getElementById('addItemBtn');
     if (isAdmin() && addBtn) addBtn.style.display = 'inline-block';
+
+    function getWishlist() {
+      try { return JSON.parse(localStorage.getItem('bena_wishlist') || '[]'); } catch { return []; }
+    }
+    function saveWishlist(w) { localStorage.setItem('bena_wishlist', JSON.stringify(w)); }
+    function isWishlisted(id) { return getWishlist().some(x => x._id === id); }
+    function toggleWishlist(product) {
+      let w = getWishlist();
+      if (isWishlisted(product._id)) {
+        w = w.filter(x => x._id !== product._id);
+      } else {
+        w.push(product);
+      }
+      saveWishlist(w);
+      return !isWishlisted(product._id) ? false : true;
+    }
 
     async function loadProducts() {
       try {
@@ -63,24 +103,56 @@
         empty.style.display = 'none';
         grid.style.display = 'grid';
         grid.innerHTML = products.map(p => `
-          <article class="product-card slide-up">
+          <article class="product-card slide-up" data-id="${p._id}">
             <div class="img-wrap">
               <img src="${p.image ? 'https://benakouture.onrender.com' + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'}" alt="${p.name}">
             </div>
             <div class="info">
               <div class="name">${p.name}</div>
               <div class="desc">${p.description || ''}</div>
-              <div class="price">₵${Number(p.price).toLocaleString()}</div>
-              <button type="button" class="btn add-cart" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">Add to Cart</button>
+              <div class="price">&#8373;${Number(p.price).toLocaleString()}</div>
+              <div class="product-btn-row">
+                <button class="btn-buy buy-btn" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">Buy</button>
+                <button class="btn-icon cart-btn" title="Add to Cart" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">&#128722;</button>
+                <button class="btn-icon wish-btn ${isWishlisted(p._id) ? 'wishlisted' : ''}" title="Wishlist" data-id="${p._id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image || ''}">&#9825;</button>
+              </div>
             </div>
           </article>
         `).join('');
-        grid.querySelectorAll('.add-cart').forEach(btn => {
+
+        // Buy button — goes straight to checkout
+        grid.querySelectorAll('.buy-btn').forEach(btn => {
           btn.addEventListener('click', () => {
             addToCart({ _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' });
-            alert('Added to cart!');
+            window.location.href = 'checkout.html';
           });
         });
+
+        // Cart button — adds to cart
+        grid.querySelectorAll('.cart-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            addToCart({ _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' });
+            btn.textContent = '✓';
+            setTimeout(() => btn.innerHTML = '&#128722;', 1500);
+          });
+        });
+
+        // Wishlist button
+        grid.querySelectorAll('.wish-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const product = { _id: btn.dataset.id, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || '' };
+            const added = toggleWishlist(product);
+            btn.classList.toggle('wishlisted');
+          });
+        });
+
+        // Track recently viewed
+        const recent = JSON.parse(localStorage.getItem('bena_recent') || '[]');
+        products.slice(0, 6).forEach(p => {
+          if (!recent.find(x => x._id === p._id)) recent.unshift({ _id: p._id, name: p.name, image: p.image, price: p.price });
+        });
+        localStorage.setItem('bena_recent', JSON.stringify(recent.slice(0, 6)));
+
       } catch (e) {
         const empty = document.getElementById('emptyState');
         if (empty) empty.innerHTML = '<p>Unable to load products.</p>';
@@ -88,5 +160,6 @@
     }
     loadProducts();
   </script>
+
 </body>
 </html>

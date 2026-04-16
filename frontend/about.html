@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -16,43 +17,52 @@
     <div class="nav-links">
       <a href="home.html">Home</a>
       <a href="shop.html">Shop</a>
-      <a href="about.html">About</a>
+      <a href="about.html" class="active">About</a>
       <a href="contact.html">Contact</a>
       <a href="exhibition.html">Exhibition</a>
       <a href="join-us.html">Join Us</a>
       <a href="profile.html">Profile</a>
-      <a href="cart.html">🛒 Cart</a>
+      <a href="cart.html">Cart</a>
       <a href="#" id="logoutBtn">Logout</a>
     </div>
   </nav>
+
   <main class="main-content">
     <section class="section" style="max-width: 720px;">
       <h2 class="section-title">About Bena Kouture</h2>
-      <p style="margin-bottom: 1rem;">Bena Kouture is a mid-level fashion brand that celebrates elegance and confidence. We believe that every woman deserves to feel like royalty in what she wears.</p>
-      <p style="margin-bottom: 1rem;">Our pieces are designed with care—refined enough for special moments, yet versatile for everyday grace. Your queenship is our happiness; we are here to help you look and feel your best.</p>
-      <p style="color: var(--text-muted);">Thank you for being part of our story.</p>
-    </section>
 
-    <footer class="page-footer">
-      &copy; Bena Kouture. Your Queenship is Our Happiness.
-    </footer>
+```
+  <div style="text-align:center; margin-bottom: 32px;">
+    <img id="aboutPhoto" src="" alt="Bena Kouture" style="display:none; width:160px; height:160px; border-radius:50%; object-fit:cover; border: 3px solid var(--wine); margin: 0 auto;">
+  </div>
+
+  <p style="margin-bottom: 1rem;">Bena Kouture is a mid-level fashion brand that celebrates elegance and confidence. We believe that every woman deserves to feel like royalty in what she wears.</p>
+  <p style="margin-bottom: 1rem;">Our pieces are designed with care — refined enough for special moments, yet versatile for everyday grace. Your queenship is our happiness; we are here to help you look and feel your best.</p>
+  <p style="color: var(--text-muted);">Thank you for being part of our story.</p>
+</section>
+
+<footer class="page-footer">
+  &copy; Bena Kouture. Your Queenship is Our Happiness.
+</footer>
+```
+
   </main>
 
-  if (localStorage.getItem('bena_dark') === 'true') {
-    document.body.classList.add('dark-mode');
-  }
-
   <script src="js/app.js"></script>
+
   <script>
+    if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
     if (!requireAuth()) throw new Error('redirect');
     setActiveNav();
-    document.getElementById('profileLink').href = isAdmin() ? 'admin.html' : '#';
-    document.getElementById('profileLink').textContent = isAdmin() ? 'Admin' : 'Profile';
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      setToken(null);
-      setUser(null);
-      window.location.href = 'login.html';
-    });
+
+    // Load brand photo from localStorage if set
+    const brandPhoto = localStorage.getItem('bena_brand_photo');
+    if (brandPhoto) {
+      const img = document.getElementById('aboutPhoto');
+      img.src = brandPhoto;
+      img.style.display = 'block';
+    }
   </script>
+
 </body>
 </html>
