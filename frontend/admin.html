@@ -135,6 +135,7 @@
     <a class="nav-item" onclick="showPage('users', this)" href="#">Users</a>
     <a class="nav-item" onclick="showPage('exhibition', this)" href="#">Exhibition</a>
     <a class="nav-item" onclick="showPage('applications', this)" href="#">Applications</a>
+    <a class="nav-item" onclick="showpage('settings', this)" href="#">Settings</a>
     <a class="nav-item" href="home.html">View Site</a>
   </nav>
   <div class="sidebar-footer">
@@ -259,6 +260,23 @@
       </table>
     </div>
   </div>
+
+  <div id="settingsPage" style="display:none;">
+    <h2>Settings</h2>
+  
+    <form id="settingsForm">
+      <label>Name:</label><br>
+      <input type="text" id="name" /><br><br>
+  
+      <label>Email:</label><br>
+      <input type="email" id="email" /><br><br>
+  
+      <button type="submit">Save Changes</button>
+    </form>
+  
+    <p id="settingsMessage"></p>
+  </div>
+
 </main>
 
 <!-- PRODUCT MODAL -->
@@ -353,7 +371,52 @@
     if (name === 'orders') loadOrders();
     if (name === 'users') loadUsers();
     if (name === 'overview') loadOverview();
-    if (name === 'exhibition') loadExhibition();
+    if (name === 'settings') loadsettings();
+
+    async function loadSettings() {
+  const token = localStorage.getItem('bena_token');
+
+  const res = await fetch('/api/auth/me', {
+    headers: {
+      Authorization: 'Bearer ' + token
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.user) {
+    document.getElementById('name').value = data.user.name;
+    document.getElementById('email').value = data.user.email;
+  }
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+
+  const token = localStorage.getItem('bena_token');
+  const name = document.getElementById('name').value;
+
+  const res = await fetch('/api/auth/update-profile', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token
+    },
+    body: JSON.stringify({ name })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('settingsMessage').innerText =
+    data.message || data.error;
+}
+
+document
+  .getElementById('settingsForm')
+  .addEventListener('submit', saveSettings);
+
+window.addEventListener('load', loadSettings);
+
   }
 
   // OVERVIEW
@@ -662,6 +725,51 @@
   });
 
   loadOverview();
+
+  async function loadSettings() {
+  const token = localStorage.getItem('bena_token');
+
+  const res = await fetch('/api/auth/me', {
+    headers: {
+      Authorization: 'Bearer ' + token
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.user) {
+    document.getElementById('name').value = data.user.name;
+    document.getElementById('email').value = data.user.email;
+  }
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+
+  const token = localStorage.getItem('bena_token');
+  const name = document.getElementById('name').value;
+
+  const res = await fetch('/api/auth/update-profile', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token
+    },
+    body: JSON.stringify({ name })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('settingsMessage').innerText =
+    data.message || data.error;
+}
+
+document
+  .getElementById('settingsForm')
+  .addEventListener('submit', saveSettings);
+
+window.addEventListener('load', loadSettings);
+
 </script>
 
 </body>
