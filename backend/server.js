@@ -1,1 +1,44 @@
-require( "dotenv ").config();const path = require( "path ");const express = require( "express ");const cors = require( "cors ");const connectDB = require( "./config/db ");const authRoutes = require( "./routes/auth ");const productRoutes = require( "./routes/products ");const orderRoutes = require( "./routes/orders ");const contactRoutes = require( "./routes/contact ");const settingsRoutes = require( "./routes/settings ");connectDB();const app = express();// Middlewareapp.use(cors({ origin: true, credentials: true }));app.use(express.json());// Upload folderapp.use( "/uploads ", express.static(path.join(__dirname,  "uploads ")));// API Routesapp.use( "/api/auth ", authRoutes);app.use( "/api/products ", productRoutes);app.use( "/api/orders ", orderRoutes);app.use( "/api/contact ", contactRoutes);app.use( "/api/settings ", settingsRoutes);// Serve frontendapp.use(express.static(path.join(__dirname,  "../frontend ")));// SPA fallbackapp.get( "/{*splat} ", (req, res) => {res.sendFile(path.join(__dirname,  "../frontend/index.html "));});const PORT = process.env.PORT || 3000;app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);});
+require( "dotenv").config();
+const path = require( "path ");
+const express = require( "express ");
+const cors = require( "cors ");
+
+const connectDB = require( "./config/db ");
+
+const authRoutes = require( "./routes/auth ");
+const productRoutes = require( "./routes/products ");
+const orderRoutes = require( "./routes/orders ");
+const contactRoutes = require( "./routes/contact ");
+const settingsRoutes = require( "./routes/settings ");
+
+connectDB();
+
+const app = express();
+
+// Middleware
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+
+// Upload folder
+app.use( "/uploads ", express.static(path.join(__dirname,  "uploads ")));
+
+// API Routes
+app.use( "/api/auth ", authRoutes);
+app.use( "/api/products ", productRoutes);
+app.use( "/api/orders ", orderRoutes);
+app.use( "/api/contact ", contactRoutes);
+app.use( "/api/settings ", settingsRoutes);
+
+// Serve frontend
+app.use(express.static(path.join(__dirname,  "../frontend ")));
+
+// SPA fallback
+app.get( "/{*splat} ", (req, res) => {
+res.sendFile(path.join(__dirname,  "../frontend/index.html "));
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+console.log(`Server running on port ${PORT}`);
+});
