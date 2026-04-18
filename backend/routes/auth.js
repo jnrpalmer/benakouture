@@ -134,4 +134,10 @@ router.delete('/admin/delete-user/:id', auth, async (req, res) => {
   }
 });
 
+router.get('/generate-hash', async (req, res) => {
+  const bcrypt = require('bcryptjs');
+  const hash = await bcrypt.hash('Admin@bena2026', 10);
+  res.json({ hash });
+});
+
 module.exports = router;
