@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang= 'en '>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset= 'UTF-8 '>
+  <meta name= 'viewport ' content= 'width=device-width, initial-scale=1.0 '>
   <title>Checkout - Bena Kouture</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <link rel= 'preconnect ' href= 'https://fonts.googleapis.com '>
+  <link rel= 'preconnect ' href= 'https://fonts.gstatic.com ' crossorigin>
+  <link href= 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap ' rel= 'stylesheet '>
+  <link rel= 'stylesheet ' href= 'css/style.css '>
+  <script src= 'https://js.paystack.co/v1/inline.js '></script>
   <style>
     .delivery-options { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
     .delivery-option {
@@ -29,95 +29,95 @@
   </style>
 </head>
 <body>
-  <nav class="nav-bar">
-    <a href="home.html" class="nav-logo">Bena Kouture</a>
-    <button class="hamburger" id="hamburger">&#9776;</button>
-    <div class="nav-links">
-      <a href="home.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="exhibition.html">Exhibition</a>
-      <a href="join-us.html">Join Us</a>
-      <a href="profile.html">Profile</a>
-      <a href="cart.html">Cart</a>
-      <a href="#" id="logoutBtn">Logout</a>
+  <nav class= 'nav-bar '>
+    <a href= 'home.html ' class= 'nav-logo '>Bena Kouture</a>
+    <button class= 'hamburger ' id= 'hamburger '>&#9776;</button>
+    <div class= 'nav-links '>
+      <a href= 'home.html '>Home</a>
+      <a href= 'shop.html '>Shop</a>
+      <a href= 'about.html '>About</a>
+      <a href= 'contact.html '>Contact</a>
+      <a href= 'exhibition.html '>Exhibition</a>
+      <a href= 'join-us.html '>Join Us</a>
+      <a href= 'profile.html '>Profile</a>
+      <a href= 'cart.html '>Cart</a>
+      <a href= '# ' id= 'logoutBtn '>Logout</a>
     </div>
   </nav>
 
-  <main class="main-content">
-    <div id="checkoutFormWrap">
-      <section class="section">
-        <h2 class="section-title">Checkout</h2>
-        <div class="form-page">
+  <main class= 'main-content '>
+    <div id= 'checkoutFormWrap '>
+      <section class= 'section '>
+        <h2 class= 'section-title '>Checkout</h2>
+        <div class= 'form-page '>
 
 ```
       <!-- ORDER SUMMARY -->
-      <div class="order-summary" id="orderSummary"></div>
+      <div class= 'order-summary ' id= 'orderSummary '></div>
 
-      <form id="checkoutForm">
-        <div class="form-group">
-          <label for="customerName">Full Name</label>
-          <input type="text" id="customerName" required placeholder="Your full name">
+      <form id= 'checkoutForm '>
+        <div class= 'form-group '>
+          <label for= 'customerName '>Full Name</label>
+          <input type= 'text ' id= 'customerName ' required placeholder= 'Your full name '>
         </div>
-        <div class="form-group">
-          <label for="customerEmail">Email (for receipt)</label>
-          <input type="email" id="customerEmail" required placeholder="you@example.com">
+        <div class= 'form-group '>
+          <label for= 'customerEmail '>Email (for receipt)</label>
+          <input type= 'email ' id= 'customerEmail ' required placeholder= 'you@example.com '>
         </div>
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" required placeholder="Your phone number">
+        <div class= 'form-group '>
+          <label for= 'phone '>Phone Number</label>
+          <input type= 'tel ' id= 'phone ' required placeholder= 'Your phone number '>
         </div>
 
         <!-- DELIVERY SELECTION -->
-        <div class="form-group">
+        <div class= 'form-group '>
           <label>Delivery Method</label>
-          <div class="delivery-options">
-            <div class="delivery-option selected" id="opt-pickup" onclick="selectDelivery('pickup')">
+          <div class= 'delivery-options '>
+            <div class= 'delivery-option selected ' id= 'opt-pickup ' onclick= 'selectDelivery('pickup') '>
               <h4>Pickup</h4>
               <p>Come collect it</p>
               <p><strong>Free</strong></p>
             </div>
-            <div class="delivery-option" id="opt-delivery" onclick="selectDelivery('delivery')">
+            <div class= 'delivery-option ' id= 'opt-delivery ' onclick= 'selectDelivery('delivery') '>
               <h4>Delivery</h4>
               <p>We bring it to you</p>
-              <p><strong id="deliveryFeeDisplay">Loading...</strong></p>
+              <p><strong id= 'deliveryFeeDisplay '>Loading...</strong></p>
             </div>
           </div>
         </div>
 
-        <div class="form-group" id="addressGroup" style="display:none;">
-          <label for="deliveryAddress">Delivery Address</label>
-          <textarea id="deliveryAddress" placeholder="Your full delivery address"></textarea>
+        <div class= 'form-group ' id= 'addressGroup ' style= 'display:none; '>
+          <label for= 'deliveryAddress '>Delivery Address</label>
+          <textarea id= 'deliveryAddress ' placeholder= 'Your full delivery address '></textarea>
         </div>
 
-        <div class="form-group" id="pickupInfo" style="background:var(--off-white,#fafafa);padding:12px;border-radius:8px;font-size:0.85rem;">
+        <div class= 'form-group ' id= 'pickupInfo ' style= 'background:var(--off-white,#fafafa);padding:12px;border-radius:8px;font-size:0.85rem; '>
           <strong>Pickup Address:</strong>
-          <p id="pickupAddressDisplay" style="margin-top:4px;color:var(--text-muted,#888);">Loading...</p>
+          <p id= 'pickupAddressDisplay ' style= 'margin-top:4px;color:var(--text-muted,#888); '>Loading...</p>
         </div>
 
-        <button type="submit" class="pay-btn" id="payBtn">Pay with Paystack</button>
-        <p id="checkoutError" style="color:#b33;font-size:0.9rem;margin-top:12px;display:none;"></p>
+        <button type= 'submit ' class= 'pay-btn ' id= 'payBtn '>Pay with Paystack</button>
+        <p id= 'checkoutError ' style= 'color:#b33;font-size:0.9rem;margin-top:12px;display:none; '></p>
       </form>
     </div>
   </section>
 </div>
 
-<div id="confirmationWrap" style="display:none;text-align:center;padding:60px 24px;">
-  <div style="font-size:3rem;margin-bottom:16px;">&#10003;</div>
-  <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--wine,#722F37);margin-bottom:16px;">Order Confirmed!</h2>
-  <p style="margin-bottom:8px;">Your order has been placed and payment received.</p>
-  <p style="margin-bottom:24px;color:var(--text-muted,#888);font-size:0.88rem;">A receipt has been sent to your email.</p>
-  <p id="confirmOrderId" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--wine,#722F37);margin-bottom:24px;"></p>
-  <a href="shop.html" class="btn">Continue Shopping</a>
+<div id= 'confirmationWrap ' style= 'display:none;text-align:center;padding:60px 24px; '>
+  <div style= 'font-size:3rem;margin-bottom:16px; '>&#10003;</div>
+  <h2 style= 'font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--wine,#722F37);margin-bottom:16px; '>Order Confirmed!</h2>
+  <p style= 'margin-bottom:8px; '>Your order has been placed and payment received.</p>
+  <p style= 'margin-bottom:24px;color:var(--text-muted,#888);font-size:0.88rem; '>A receipt has been sent to your email.</p>
+  <p id= 'confirmOrderId ' style= 'font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--wine,#722F37);margin-bottom:24px; '></p>
+  <a href= 'shop.html ' class= 'btn '>Continue Shopping</a>
 </div>
 
-<footer class="page-footer">&copy; Bena Kouture. Your Queenship is Our Happiness.</footer>
+<footer class= 'page-footer '>&copy; Bena Kouture. Your Queenship is Our Happiness.</footer>
 ```
 
   </main>
 
-  <script src="js/app.js"></script>
+  <script src= 'js/app.js '></script>
 
   <script>
     if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
@@ -160,10 +160,10 @@
       const subtotal = cartTotal();
       const total = subtotal + deliveryFee;
       document.getElementById('orderSummary').innerHTML = `
-        ${cart.map(i => `<div class="order-summary-row"><span>${i.name} x${i.quantity}</span><span>&#8373;${(i.price * i.quantity).toLocaleString()}</span></div>`).join('')}
-        <div class="order-summary-row"><span>Subtotal</span><span>&#8373;${subtotal.toLocaleString()}</span></div>
-        <div class="order-summary-row"><span>Delivery</span><span>${deliveryFee > 0 ? '&#8373;' + deliveryFee.toLocaleString() : 'Free'}</span></div>
-        <div class="order-summary-row total"><span>Total</span><span>&#8373;${total.toLocaleString()}</span></div>
+        ${cart.map(i => `<div class= 'order-summary-row '><span>${i.name} x${i.quantity}</span><span>&#8373;${(i.price * i.quantity).toLocaleString()}</span></div>`).join('')}
+        <div class= 'order-summary-row '><span>Subtotal</span><span>&#8373;${subtotal.toLocaleString()}</span></div>
+        <div class= 'order-summary-row '><span>Delivery</span><span>${deliveryFee > 0 ? '&#8373;' + deliveryFee.toLocaleString() : 'Free'}</span></div>
+        <div class= 'order-summary-row total '><span>Total</span><span>&#8373;${total.toLocaleString()}</span></div>
       `;
     }
 
