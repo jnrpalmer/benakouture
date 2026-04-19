@@ -78,7 +78,7 @@
           const outOfStock = p.stock !== undefined && p.stock !== null && p.stock <= 0;
           return `
           <article class= 'product-card slide-up ${outOfStock ? 'out-of-stock' : ''} ' data-id= '${p._id} '>
-            ${outOfStock ? '<span class= 'out-of-stock-badge '>Out of Stock</span>' : ''}
+            ${outOfStock ? '<span class="out-of-stock-badge">Out of Stock</span>' : ''}
             <div class= 'img-wrap '>
               <img src= '${p.image ? 'https://benakouture.onrender.com' + p.image : 'https://via.placeholder.com/300x400/722F37/ffffff?text=Bena+Kouture'} ' alt= '${p.name} '>
             </div>
