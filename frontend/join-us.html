@@ -245,9 +245,9 @@
   <!-- SECTION TABS -->
 
   <div class= 'sections-nav '>
-    <button class= 'section-tab active ' onclick= 'selectRole('worker') '> Worker</button>
-    <button class= 'section-tab ' onclick= 'selectRole('apprentice') '> Apprentice</button>
-    <button class= 'section-tab ' onclick= 'selectRole('sponsor') '> Sponsor / Investor</button>
+    <button class= 'section-tab active ' onclick= 'selectRole("worker") '> Worker</button>
+    <button class= 'section-tab ' onclick= 'selectRole("apprentice") '> Apprentice</button>
+    <button class= 'section-tab ' onclick= 'selectRole("sponsor") '> Sponsor / Investor</button>
   </div>
 
   <div class= 'join-wrapper '>
@@ -255,7 +255,7 @@
 ```
 <!-- WORKER INTRO -->
 <div class= 'role-intro active ' id= 'intro-worker '>
-  <div class= 'role-icon '>empty</div>
+  <div class= 'role-icon '></div>
   <div class= 'role-title '>Work With Us</div>
   <div class= 'role-desc '>Join our growing team at Bena Kouture. We're looking for passionate, hardworking individuals who share our love for fashion and excellence. From customer service to production, there's a role for you.</div>
   <div class= 'role-perks '>
@@ -264,7 +264,7 @@
     <span class= 'perk-tag '>Growth opportunities</span>
     <span class= 'perk-tag '>Team culture</span>
   </div>
-  <button class= 'btn-primary ' onclick= 'startForm('worker') '>Apply Now →</button>
+  <button class= 'btn-primary ' onclick= 'startForm("worker") '>Apply Now →</button>
 </div>
 
 <!-- APPRENTICE INTRO -->
@@ -278,7 +278,7 @@
     <span class= 'perk-tag '>Certificate upon completion</span>
     <span class= 'perk-tag '>Flexible schedule</span>
   </div>
-  <button class= 'btn-primary ' onclick= 'startForm('apprentice') '>Apply Now →</button>
+  <button class= 'btn-primary ' onclick= 'startForm("apprentice") '>Apply Now →</button>
 </div>
 
 <!-- SPONSOR INTRO -->
@@ -292,7 +292,7 @@
     <span class= 'perk-tag '>Social impact</span>
     <span class= 'perk-tag '>African fashion market</span>
   </div>
-  <button class= 'btn-primary ' onclick= 'startForm('sponsor') '>Express Interest →</button>
+  <button class= 'btn-primary ' onclick= 'startForm("sponsor") '>Express Interest →</button>
 </div>
 
 <!-- =================== WORKER FORM =================== -->
@@ -371,9 +371,9 @@
     </div>
     <div class= 'form-group '><label>When can you start? *</label><input type= 'date ' id= 'w-start '></div>
     <div class= 'form-group '><label>Any additional information you'd like us to know?</label><textarea id= 'w-extra ' placeholder= 'Optional '></textarea></div>
-    <button class= 'btn-primary ' id= 'w-submit ' onclick= 'submitForm('worker') '>Submit Application</button>
+    <button class= 'btn-primary ' id= 'w-submit ' onclick= 'submitForm("worker") '>Submit Application</button>
     <button class= 'btn-back ' onclick= 'workerBack(2) '>← Back</button>
-    <div class= 'error-msg ' id= 'w-error '></div>
+    <div class= 'error-msg ' id= "w-error"></div>
   </div>
 </div>
 
@@ -647,10 +647,10 @@
           location: val('a-location'), age: val('a-age'), education: val('a-edu'),
           fashionExp: document.querySelector('input[name= "a-exp"]:checked')?.value || 'Not specified',
           interest: val('a-interest'),
-          ownsMachine: document.querySelector('input[name= 'a-machine ']:checked')?.value || 'Not specified',
+          ownsMachine: document.querySelector('input[name= "a-machine"]:checked')?.value || 'Not specified',
           hoursPerWeek: val('a-hours'), financialInfo: val('a-finance'),
           whyUs: val('a-why'), vision: val('a-vision'),
-          guardianSupport: document.querySelector('input[name= 'a-guardian ']:checked')?.value || 'Not specified',
+          guardianSupport: document.querySelector('input[name= "a-guardian"]:checked')?.value || 'Not specified',
           guardianContact: val('a-guardian-contact'), startDate: val('a-start')
         };
       } else if (role === 'sponsor') {
@@ -659,7 +659,7 @@
           name: val('s-fname') + ' ' + val('s-lname'),
           email: val('s-email'), phone: val('s-phone'),
           company: val('s-company'), title: val('s-title'), location: val('s-location'),
-          partnershipType: document.querySelector('input[name= 's-type ']:checked')?.value || 'Not specified',
+          partnershipType: document.querySelector('input[name= "s-type"]:checked')?.value || 'Not specified',
           investmentRange: val('s-range'),
           knowAboutUs: val('s-know'), whyUs: val('s-why'), valueAdded: val('s-value'), extra: val('s-extra')
         };
