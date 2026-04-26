@@ -1,215 +1,139 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exhibition - Bena Kouture</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Raleway:wght@200;300;400&display=swap" rel="stylesheet">
+
   <style>
-    :root { --wine: #722F37; --wine-dark: #5a262c; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Raleway', sans-serif; background: #0a0606; color: white; overflow-x: hidden; }
-    .nav-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(10,6,6,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(114,47,55,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 1000; }
-    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--wine); text-decoration: none; }
-    .nav-links { display: flex; align-items: center; gap: 8px; }
-    .nav-links a { padding: 6px 12px; border-radius: 6px; font-size: 0.88rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.3s; }
-    .nav-links a:hover, .nav-links a.active { color: var(--wine); }
-    .hamburger { display: none; font-size: 1.4rem; background: none; border: none; color: var(--wine); cursor: pointer; }
-    @media(max-width:768px) { .nav-links { display: none; flex-direction: column; position: fixed; top: 60px; left: 0; right: 0; background: rgba(10,6,6,0.97); padding: 16px; } .nav-links.mobile-open { display: flex; } .hamburger { display: block; } }
+    :root { --wine:#722F37; }
+    body { font-family:'Raleway',sans-serif; background:#0a0606; color:white; margin:0; }
 
-```
-.exhibition-hero { height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: linear-gradient(160deg, #1a0a0c 0%, #0a0606 60%, #1a0a0c 100%); }
-.hero-bg-text { position: absolute; font-family: 'Cormorant Garamond', serif; font-size: clamp(80px, 20vw, 220px); font-weight: 300; color: rgba(114,47,55,0.07); user-select: none; white-space: nowrap; }
-.hero-content { position: relative; text-align: center; z-index: 2; padding: 0 24px; }
-.hero-eyebrow { font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--wine); margin-bottom: 20px; }
-.hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 10vw, 7rem); font-weight: 300; line-height: 1; color: white; margin-bottom: 24px; }
-.hero-title em { font-style: italic; color: var(--wine); }
-.hero-subtitle { font-size: 0.9rem; color: rgba(255,255,255,0.5); font-weight: 300; letter-spacing: 0.1em; margin-bottom: 48px; }
-.scroll-hint { display: flex; flex-direction: column; align-items: center; gap: 8px; color: rgba(255,255,255,0.3); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; animation: bounce 2s infinite; }
-.scroll-hint::after { content: ''; width: 1px; height: 60px; background: linear-gradient(to bottom, rgba(114,47,55,0.6), transparent); }
-@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+    .nav-bar {
+      position:fixed; top:0; width:100%;
+      background:rgba(10,6,6,0.9);
+      display:flex; justify-content:space-between;
+      padding:12px 20px; z-index:1000;
+    }
 
-.gallery-section { padding: 80px 0; }
-.section-label { text-align: center; margin-bottom: 60px; }
-.section-label h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 300; color: white; }
-.section-label h2 span { color: var(--wine); font-style: italic; }
-.section-label p { font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-top: 8px; letter-spacing: 0.1em; }
+    .nav-logo { color:var(--wine); text-decoration:none; font-weight:600; }
 
-.parallax-item { position: relative; width: 100%; overflow: hidden; margin-bottom: 4px; cursor: pointer; }
-.parallax-item:hover .media-overlay { opacity: 1; }
-.parallax-inner { width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94); will-change: transform; }
-.item-full { height: 90vh; }
-.item-tall { height: 70vh; }
-.item-medium { height: 55vh; }
-.item-short { height: 40vh; }
+    .nav-links a {
+      color:white; text-decoration:none; margin-left:12px;
+      font-size:0.9rem;
+    }
 
-.parallax-item img, .parallax-item video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.media-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,6,6,0.7) 0%, transparent 50%); opacity: 0; transition: opacity 0.5s; display: flex; align-items: flex-end; padding: 32px; }
-.media-caption { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-style: italic; color: white; font-weight: 300; }
-.media-caption span { display: block; font-family: 'Raleway', sans-serif; font-size: 0.75rem; font-style: normal; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; margin-top: 4px; }
+    .exhibition-hero {
+      height:100vh;
+      display:flex; justify-content:center; align-items:center;
+      text-align:center;
+    }
 
-.grid-row { display: grid; gap: 4px; margin-bottom: 4px; }
-.grid-2 { grid-template-columns: 1fr 1fr; }
-.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
-.grid-1-2 { grid-template-columns: 1fr 2fr; }
-.grid-2-1 { grid-template-columns: 2fr 1fr; }
+    .hero-title {
+      font-size:4rem;
+      font-family:'Cormorant Garamond',serif;
+    }
 
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease, transform 0.9s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+    .gallery { padding:60px 20px; }
 
-.quote-break { padding: 80px 24px; text-align: center; border-top: 1px solid rgba(114,47,55,0.15); border-bottom: 1px solid rgba(114,47,55,0.15); margin: 60px 0; }
-.quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-style: italic; font-weight: 300; color: rgba(255,255,255,0.85); max-width: 700px; margin: 0 auto; line-height: 1.5; }
-.quote-text em { color: var(--wine); }
-.quote-attr { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 20px; }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:12px;
+    }
 
-.placeholder-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; background: linear-gradient(135deg, #1a0a0c, #2a1215); border: 1px solid rgba(114,47,55,0.15); }
-.placeholder-label { font-size: 0.75rem; color: rgba(255,255,255,0.25); letter-spacing: 0.15em; text-transform: uppercase; }
+    .item {
+      position:relative;
+      overflow:hidden;
+    }
 
-.empty-exhibition { text-align: center; padding: 80px 24px; }
-.empty-exhibition p { color: rgba(255,255,255,0.4); font-size: 0.9rem; }
+    .item img, .item video {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
 
-footer { text-align: center; padding: 40px 24px; font-size: 0.82rem; color: rgba(255,255,255,0.2); border-top: 1px solid rgba(114,47,55,0.1); margin-top: 60px; }
-```
+    .empty {
+      text-align:center;
+      padding:60px;
+      color:#aaa;
+    }
 
+    footer {
+      text-align:center;
+      padding:30px;
+      color:#777;
+    }
   </style>
 </head>
+
 <body>
 
-  <nav class="nav-bar">
-    <a href="home.html" class="nav-logo">Bena Kouture</a>
-    <button class="hamburger" id="hamburger">&#9776;</button>
-    <div class="nav-links">
-      <a href="home.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="exhibition.html" class="active">Exhibition</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="join-us.html">Join Us</a>
-      <a href="profile.html">Profile</a>
-      <a href="cart.html">Cart</a>
-      <a href="#" id="logoutBtn">Logout</a>
-    </div>
-  </nav>
-
-  <section class="exhibition-hero">
-    <div class="hero-bg-text">KOUTURE</div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Bena Kouture &nbsp;&middot;&nbsp; Collection</p>
-      <h1 class="hero-title">The <em>Exhibition</em></h1>
-      <p class="hero-subtitle">A visual journey through fabric, form &amp; femininity</p>
-      <div class="scroll-hint">Scroll to explore</div>
-    </div>
-  </section>
-
-  <div class="gallery-section">
-    <div class="section-label reveal">
-      <h2>Latest <span>Collection</span></h2>
-      <p>Scroll to unveil each piece</p>
-    </div>
-
-```
-<div id="galleryContent"></div>
-
-<div class="quote-break reveal">
-  <p class="quote-text">"Every stitch is a <em>love letter</em> to the woman who wears it."</p>
-  <p class="quote-attr">&mdash; Bena Kouture</p>
-</div>
-```
-
+<nav class="nav-bar">
+  <a href="home.html" class="nav-logo">Bena Kouture</a>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="exhibition.html">Exhibition</a>
   </div>
+</nav>
 
-  <footer>&copy; Bena Kouture. Your Queenship is Our Happiness.</footer>
+<section class="exhibition-hero">
+  <h1 class="hero-title">Exhibition</h1>
+</section>
 
-  <script src="js/app.js"></script>
+<section class="gallery">
+  <div id="gallery" class="grid"></div>
+</section>
 
-  <script>
-    if (localStorage.getItem('bena_dark') === 'true') document.body.classList.add('dark-mode');
+<footer>© Bena Kouture</footer>
 
-    
+<script src="js/app.js"></script>
 
-    // Load media from localStorage
-    const media = JSON.parse(localStorage.getItem('bena_exhibition') || '[]');
-    const gallery = document.getElementById('galleryContent');
+<script>
+  async function loadExhibition() {
+    const gallery = document.getElementById('gallery');
 
-    if (media.length === 0) {
-      gallery.innerHTML = `<div class="empty-exhibition"><p>No exhibition media yet. Upload images and videos from the admin dashboard.</p></div>`;
-    } else {
-      // Build gallery layout
-      let html = '';
-      let i = 0;
-      while (i < media.length) {
-        const remaining = media.length - i;
-        if (remaining === 1) {
-          html += buildItem(media[i], 'item-full', i); i++;
-        } else if (remaining === 2 || (remaining > 3 && i % 3 === 0)) {
-          html += `<div class="grid-row grid-2 reveal">`;
-          html += buildItem(media[i], 'item-tall', i); i++;
-          html += buildItem(media[i], 'item-tall', i); i++;
-          html += `</div>`;
-        } else {
-          html += buildItem(media[i], 'item-full reveal', i); i++;
-        }
+    try {
+      const media = await fetchApi('/exhibition'); // ✅ FIX: backend fetch
+
+      if (!media || media.length === 0) {
+        gallery.innerHTML = `<div class="empty">No exhibition media yet</div>`;
+        return;
       }
-      gallery.innerHTML = html;
 
-      // Autoplay videos on scroll
-      const videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const video = entry.target;
-          if (entry.isIntersecting) {
-            video.play().catch(() => {});
-          } else {
-            video.pause();
-          }
-        });
-      }, { threshold: 0.3 });
+      gallery.innerHTML = media.map(item => {
+        const src = item.src.startsWith('http')
+          ? item.src
+          : 'https://benakouture.onrender.com' + item.src;
 
-      document.querySelectorAll('.parallax-item video').forEach(v => videoObserver.observe(v));
-    }
-
-    function buildItem(m, sizeClass, index) {
-      const content = m.type === 'video'
-        ? `<video src="${m.src}" muted loop playsinline preload="metadata"></video>`
-        : `<img src="${m.src}" alt="Exhibition ${index + 1}">`;
-      return `
-        <div class="parallax-item ${sizeClass}">
-          <div class="parallax-inner">${content}</div>
-          <div class="media-overlay">
-            <div class="media-caption">Bena Kouture<span>Collection</span></div>
-          </div>
-        </div>`;
-    }
-
-    // Scroll reveal
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, idx) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), idx * 80);
-          observer.unobserve(entry.target);
+        if (item.type === 'video') {
+          return `
+            <div class="item">
+              <video src="${src}" controls muted loop></video>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="item">
+              <img src="${src}" alt="Exhibition">
+            </div>
+          `;
         }
-      });
-    }, { threshold: 0.1 });
-    reveals.forEach(el => observer.observe(el));
+      }).join('');
 
-    // Parallax
-    const parallaxItems = document.querySelectorAll('.parallax-inner');
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      parallaxItems.forEach(item => {
-        const parent = item.parentElement;
-        const rect = parent.getBoundingClientRect();
-        if (rect.bottom > 0 && rect.top < window.innerHeight) {
-          const offset = (rect.top / window.innerHeight) * 0.15 * 100;
-          item.style.transform = `translateY(${offset}px)`;
-        }
-      });
-    }, { passive: true });
-  </script>
+    } catch (err) {
+      gallery.innerHTML = `<div class="empty">Failed to load exhibition</div>`;
+    }
+  }
+
+  loadExhibition();
+</script>
 
 </body>
 </html>
