@@ -576,25 +576,17 @@
   }
 
   function loadExhibition(){
-  var media = JSON.parse(localStorage.getItem("bena_exhibition") || "[]");
-  var grid = document.getElementById("exhibitionGrid");
-
-  if(!media.length){
-    grid.innerHTML = "<div class=\"loading\">No media yet. Upload images or videos above.</div>";
-    return;
+    var media=JSON.parse(localStorage.getItem("bena_exhibition")||"[]");
+    var grid=document.getElementById("exhibitionGrid");
+    if(!media.length){grid.innerHTML="<div class=\"loading\">No media yet. Upload images or videos above.</div>";return;}
+    grid.innerHTML=media.map(function(m,i){
+      return "<div class=\"exhibition-item\">"+
+         (m.type==="video"?"<video src=\""+m.src+"\" muted loop playsinline></video>":"<img src=\""+m.src+"\" alt=\"Exhibition "+(i+1)+"\">")+
+    "<button class=\"delete-media\" onclick=\"deleteMedia("+i+")\">x</button>"
+        "<span class=\"media-type-badge\">"+m.type+"</span>"+
+        "</div>";
+    }).join("");
   }
-
-  grid.innerHTML = media.map(function(m, i){
-    return "<div class=\"exhibition-item\">" +
-      (m.type === "video"
-        ? "<video src=\"" + m.src + "\" muted loop playsinline></video>"
-        : "<img src=\"" + m.src + "\" alt=\"Exhibition " + (i+1) + "\">"
-      ) +
-      "<button class=\"delete-media\" onclick=\"deleteMedia(" + i + ")\">x</button>" +
-      "<span class=\"media-type-badge\">" + m.type + "</span>" +
-    "</div>";
-  }).join("");
-}
 
   function deleteMedia(index){
     var media=JSON.parse(localStorage.getItem("bena_exhibition")||"[]");
