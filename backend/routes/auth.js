@@ -131,6 +131,8 @@ router.delete('/admin/delete-user/:id', auth, async (req, res) => {
 
   } catch (e) {
     res.status(500).json({ error: e.message });
+
+    
   }
 });
 

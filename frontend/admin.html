@@ -110,6 +110,8 @@
     .settings-card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--wine);margin-bottom:20px}
     .settings-save{width:100%;padding:14px;background:var(--wine);color:white;border:none;border-radius:8px;font-family:'Raleway',sans-serif;font-size:0.95rem;cursor:pointer;transition:background 0.2s;margin-top:8px}
     .settings-save:hover{background:var(--wine-dark)}
+    .upload-progress-bar{height:4px;background:var(--surface2);border-radius:4px;margin-bottom:16px;overflow:hidden;display:none}
+    .upload-progress-bar-fill{height:100%;background:var(--wine);border-radius:4px;transition:width 0.3s ease;width:0%}
   </style>
 </head>
 <body>
@@ -208,15 +210,16 @@
   <div class="page" id="page-exhibition">
     <div class="section-header">
       <h2>Manage <span>Exhibition</span></h2>
-      <span style="font-size:0.82rem;color:var(--text-muted);">Upload images and videos for your exhibition page</span>
+      <span style="font-size:0.82rem;color:var(--text-muted);">Upload images and videos — synced across all devices</span>
     </div>
     <div class="upload-area" id="uploadArea" onclick="document.getElementById('mediaInput').click()">
       <div style="font-size:2rem;opacity:0.4;">+</div>
       <p>Click to upload images or videos</p>
-      <p style="font-size:0.75rem;margin-top:4px;">Supports: JPG, PNG, MP4, MOV</p>
+      <p style="font-size:0.75rem;margin-top:4px;">Supports: JPG, PNG, MP4, MOV · Images auto-compressed</p>
     </div>
     <input type="file" id="mediaInput" accept="image/*,video/*" multiple style="display:none;">
-    <div id="uploadProgress" style="display:none;margin-bottom:16px;color:var(--text-muted);font-size:0.85rem;">Uploading...</div>
+    <div id="uploadProgress" style="display:none;margin-bottom:8px;color:var(--text-muted);font-size:0.85rem;text-align:center;"></div>
+    <div class="upload-progress-bar" id="uploadProgressBar"><div class="upload-progress-bar-fill" id="uploadProgressFill"></div></div>
     <div class="exhibition-grid" id="exhibitionGrid"><div class="loading">Loading exhibition media...</div></div>
   </div>
 
@@ -257,6 +260,7 @@
 
 </main>
 
+<!-- Product Modal -->
 <div class="modal-overlay" id="productModal">
   <div class="modal">
     <h3 id="productModalTitle">Add Product</h3>
@@ -289,6 +293,7 @@
   </div>
 </div>
 
+<!-- Order Modal -->
 <div class="modal-overlay" id="orderModal">
   <div class="modal">
     <h3>Order Details</h3>
@@ -297,6 +302,7 @@
   </div>
 </div>
 
+<!-- Confirm Modal -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal confirm-modal">
     <h3 id="confirmTitle">Are you sure?</h3>
@@ -312,320 +318,479 @@
 
 <script src="js/app.js"></script>
 <script>
-  if(!requireAuth())throw new Error("redirect");
-  if(!isAdmin()){window.location.href="home.html";throw new Error("admin only")}
-  if(localStorage.getItem("bena_dark")==="true")document.body.classList.add("dark-mode");
+  // ─── Constants ────────────────────────────────────────────────────────────
+  var BASE_URL = "https://benakouture.onrender.com";
 
-  var user=getUser();
-  if(user)document.getElementById("adminName").textContent=user.name||"Admin";
+  // ─── Auth guard ───────────────────────────────────────────────────────────
+  if(!requireAuth()) throw new Error("redirect");
+  if(!isAdmin()){ window.location.href="home.html"; throw new Error("admin only"); }
 
-  document.getElementById("sidebarToggle").addEventListener("click",function(){
+  var user = getUser();
+  if(user) document.getElementById("adminName").textContent = user.name || "Admin";
+
+  // ─── Sidebar toggle ───────────────────────────────────────────────────────
+  document.getElementById("sidebarToggle").addEventListener("click", function(){
     document.getElementById("sidebar").classList.toggle("open");
   });
 
-  document.getElementById("logoutBtn").addEventListener("click",async function(){
-    await fetchApi("/auth/logout",{method:"POST"}).catch(function(){});
-    setToken(null);setUser(null);
-    window.location.href="login.html";
+  // ─── Logout ───────────────────────────────────────────────────────────────
+  document.getElementById("logoutBtn").addEventListener("click", async function(){
+    await fetchApi("/auth/logout", {method:"POST"}).catch(function(){});
+    setToken(null); setUser(null);
+    window.location.href = "login.html";
   });
 
-  function toast(msg,type){
-    if(!type)type="success";
-    var t=document.getElementById("toast");
-    t.textContent=msg;
-    t.className="toast "+type+" show";
-    setTimeout(function(){t.classList.remove("show");},3000);
+  // ─── Toast ────────────────────────────────────────────────────────────────
+  function toast(msg, type){
+    if(!type) type = "success";
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast " + type + " show";
+    setTimeout(function(){ t.classList.remove("show"); }, 3500);
   }
 
-  function showPage(name,el){
-    document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
-    document.querySelectorAll(".nav-item").forEach(function(n){n.classList.remove("active");});
-    document.getElementById("page-"+name).classList.add("active");
-    if(el)el.classList.add("active");
-    if(name==="products")loadProducts();
-    if(name==="orders")loadOrders();
-    if(name==="users")loadUsers();
-    if(name==="overview")loadOverview();
-    if(name==="exhibition")loadExhibition();
-    if(name==="settings")loadSettings();
+  // ─── Page navigation ──────────────────────────────────────────────────────
+  function showPage(name, el){
+    document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
+    document.querySelectorAll(".nav-item").forEach(function(n){ n.classList.remove("active"); });
+    document.getElementById("page-" + name).classList.add("active");
+    if(el) el.classList.add("active");
+    if(name === "products")    loadProducts();
+    if(name === "orders")      loadOrders();
+    if(name === "users")       loadUsers();
+    if(name === "overview")    loadOverview();
+    if(name === "exhibition")  loadExhibition();
+    if(name === "settings")    loadSettings();
   }
 
+  // ─── Overview ─────────────────────────────────────────────────────────────
   async function loadOverview(){
     try{
-      var results=await Promise.all([
+      var results = await Promise.all([
         fetchApi("/products"),
-        fetchApi("/orders/all").catch(function(){return[];}),
-        fetchApi("/auth/users").catch(function(){return[];})
+        fetchApi("/orders/all").catch(function(){ return []; }),
+        fetchApi("/auth/users").catch(function(){ return []; })
       ]);
-      var products=results[0];
-      var orders=results[1];
-      var users=results[2];
-      document.getElementById("stat-products").textContent=products.length;
-      document.getElementById("stat-orders").textContent=orders.length;
-      document.getElementById("stat-users").textContent=users.length;
-      var revenue=orders.reduce(function(sum,o){return sum+(o.total||0);},0);
-      document.getElementById("stat-revenue").textContent="GHS "+revenue.toLocaleString();
-      var pending=orders.filter(function(o){return o.status==="pending"||o.status==="processing";}).length;
-      document.getElementById("stat-pending-text").textContent=pending+" pending";
-      if(pending>0){document.getElementById("pendingBadge").textContent=pending;document.getElementById("pendingBadge").style.display="inline";}
-      var recent=orders.slice(0,8);
-      document.getElementById("recentOrdersTable").innerHTML=recent.length?recent.map(function(o){
-        return "<tr><td>#"+(o._id?o._id.slice(-6).toUpperCase():"-")+"</td><td>"+(o.user?o.user.name||"-":"-")+"</td><td>GHS "+(o.total||0).toLocaleString()+"</td><td>"+statusBadge(o.status)+"</td><td>"+(o.createdAt?new Date(o.createdAt).toLocaleDateString():"-")+"</td></tr>";
-      }).join(""):"<tr class=\"empty-row\"><td colspan=\"5\">No orders yet.</td></tr>";
-    }catch(e){console.error(e);}
+      var products = results[0];
+      var orders   = results[1];
+      var users    = results[2];
+      document.getElementById("stat-products").textContent = products.length;
+      document.getElementById("stat-orders").textContent   = orders.length;
+      document.getElementById("stat-users").textContent    = users.length;
+      var revenue = orders.reduce(function(sum,o){ return sum+(o.total||0); }, 0);
+      document.getElementById("stat-revenue").textContent  = "GHS " + revenue.toLocaleString();
+      var pending = orders.filter(function(o){ return o.status==="pending"||o.status==="processing"; }).length;
+      document.getElementById("stat-pending-text").textContent = pending + " pending";
+      if(pending > 0){
+        document.getElementById("pendingBadge").textContent    = pending;
+        document.getElementById("pendingBadge").style.display = "inline";
+      }
+      var recent = orders.slice(0,8);
+      document.getElementById("recentOrdersTable").innerHTML = recent.length
+        ? recent.map(function(o){
+            return "<tr><td>#"+(o._id?o._id.slice(-6).toUpperCase():"-")+"</td><td>"+(o.user?o.user.name||"-":"-")+"</td><td>GHS "+(o.total||0).toLocaleString()+"</td><td>"+statusBadge(o.status)+"</td><td>"+(o.createdAt?new Date(o.createdAt).toLocaleDateString():"-")+"</td></tr>";
+          }).join("")
+        : "<tr class=\"empty-row\"><td colspan=\"5\">No orders yet.</td></tr>";
+    }catch(e){ console.error(e); }
   }
 
-  var allProducts=[];
+  // ─── Products ─────────────────────────────────────────────────────────────
+  var allProducts = [];
   async function loadProducts(){
-    document.getElementById("productsGrid").innerHTML="<div class=\"loading\">Loading...</div>";
+    document.getElementById("productsGrid").innerHTML = "<div class=\"loading\">Loading...</div>";
     try{
-      allProducts=await fetchApi("/products");
+      allProducts = await fetchApi("/products");
       renderProducts(allProducts);
     }catch(e){
-      document.getElementById("productsGrid").innerHTML="<div class=\"loading\">Failed to load products.</div>";
+      document.getElementById("productsGrid").innerHTML = "<div class=\"loading\">Failed to load products.</div>";
     }
   }
 
   function renderProducts(products){
-    var grid=document.getElementById("productsGrid");
-    if(!products.length){grid.innerHTML="<div class=\"loading\">No products yet. Add your first one!</div>";return;}
-    grid.innerHTML=products.map(function(p){
-      var imgSrc=p.image?"https://benakouture.onrender.com"+p.image:null;
-      return "<div class=\"product-card\">"+
-        "<div class=\"product-img\">"+(imgSrc?"<img src=\""+imgSrc+"\" alt=\""+p.name+"\">":"<span style=\"opacity:0.3;font-size:2rem;\">+</span>")+"</div>"+
-        "<div class=\"product-info\">"+
-        "<div class=\"product-name\">"+p.name+"</div>"+
-        "<div class=\"product-price\">GHS "+Number(p.price).toLocaleString()+"</div>"+
-        "<div style=\"font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;\">"+(p.featured?"Featured":"Not featured")+"</div>"+
-        "<div class=\"product-actions\">"+
-        "<button class=\"btn btn-primary btn-sm\" style=\"flex:1\" onclick=\"editProduct('"+p._id+"')\">Edit</button>"+
-        "<button class=\"btn btn-danger btn-sm\" onclick=\"deleteProduct('"+p._id+"','"+p.name.replace(/'/g,"")+"')\">Del</button>"+
+    var grid = document.getElementById("productsGrid");
+    if(!products.length){ grid.innerHTML = "<div class=\"loading\">No products yet. Add your first one!</div>"; return; }
+    grid.innerHTML = products.map(function(p){
+      var imgSrc = p.image ? BASE_URL + p.image : null;
+      return "<div class=\"product-card\">" +
+        "<div class=\"product-img\">" + (imgSrc ? "<img src=\""+imgSrc+"\" alt=\""+p.name+"\">" : "<span style=\"opacity:0.3;font-size:2rem;\">+</span>") + "</div>" +
+        "<div class=\"product-info\">" +
+        "<div class=\"product-name\">"+p.name+"</div>" +
+        "<div class=\"product-price\">GHS "+Number(p.price).toLocaleString()+"</div>" +
+        "<div style=\"font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;\">"+(p.featured?"⭐ Featured":"Not featured")+"</div>" +
+        "<div class=\"product-actions\">" +
+        "<button class=\"btn btn-primary btn-sm\" style=\"flex:1\" onclick=\"editProduct('"+p._id+"')\">Edit</button>" +
+        "<button class=\"btn btn-danger btn-sm\" onclick=\"deleteProduct('"+p._id+"','"+p.name.replace(/'/g,"")+"')\">Del</button>" +
         "</div></div></div>";
     }).join("");
   }
 
-  document.getElementById("productSearch").addEventListener("input",function(e){
-    var q=e.target.value.toLowerCase();
-    renderProducts(allProducts.filter(function(p){return p.name.toLowerCase().includes(q);}));
+  document.getElementById("productSearch").addEventListener("input", function(e){
+    var q = e.target.value.toLowerCase();
+    renderProducts(allProducts.filter(function(p){ return p.name.toLowerCase().includes(q); }));
   });
 
   function openProductModal(product){
-    if(!product)product=null;
-    document.getElementById("productModalTitle").textContent=product?"Edit Product":"Add Product";
-    document.getElementById("productId").value=product?product._id||"":"";
-    document.getElementById("productName").value=product?product.name||"":"";
-    document.getElementById("productDesc").value=product?product.description||"":"";
-    document.getElementById("productPrice").value=product?product.price||"":"";
-    document.getElementById("productCategory").value=product?product.category||"":"";
-    document.getElementById("productStock").value=product?product.stock||"":"";
-    document.getElementById("productFeatured").value=product&&product.featured===true?"true":"false";
-    document.getElementById("productImage").value="";
-    var preview=document.getElementById("imgPreview");
-    preview.innerHTML=product&&product.image?"<img src=\"https://benakouture.onrender.com"+product.image+"\" alt=\"preview\">":"<span style=\"font-size:2rem;opacity:0.3;\">+</span>";
+    if(!product) product = null;
+    document.getElementById("productModalTitle").textContent = product ? "Edit Product" : "Add Product";
+    document.getElementById("productId").value       = product ? product._id||"" : "";
+    document.getElementById("productName").value     = product ? product.name||"" : "";
+    document.getElementById("productDesc").value     = product ? product.description||"" : "";
+    document.getElementById("productPrice").value    = product ? product.price||"" : "";
+    document.getElementById("productCategory").value = product ? product.category||"" : "";
+    document.getElementById("productStock").value    = product ? product.stock||"" : "";
+    document.getElementById("productFeatured").value = product && product.featured===true ? "true" : "false";
+    document.getElementById("productImage").value    = "";
+    var preview = document.getElementById("imgPreview");
+    preview.innerHTML = product && product.image
+      ? "<img src=\""+BASE_URL+product.image+"\" alt=\"preview\">"
+      : "<span style=\"font-size:2rem;opacity:0.3;\">+</span>";
     document.getElementById("productModal").classList.add("open");
   }
 
-  document.getElementById("productImage").addEventListener("change",function(e){
-    var file=e.target.files[0];
+  // Preview selected product image
+  document.getElementById("productImage").addEventListener("change", function(e){
+    var file = e.target.files[0];
     if(file){
-      var reader=new FileReader();
-      reader.onload=function(ev){document.getElementById("imgPreview").innerHTML="<img src=\""+ev.target.result+"\" alt=\"preview\">";};
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        document.getElementById("imgPreview").innerHTML = "<img src=\""+ev.target.result+"\" alt=\"preview\">";
+      };
       reader.readAsDataURL(file);
     }
   });
 
   function editProduct(id){
-    var p=allProducts.find(function(x){return x._id===id;});
-    if(p)openProductModal(p);
+    var p = allProducts.find(function(x){ return x._id===id; });
+    if(p) openProductModal(p);
   }
 
-  async function saveProduct(){
-    var id=document.getElementById("productId").value;
-    var name=document.getElementById("productName").value.trim();
-    var price=document.getElementById("productPrice").value;
-    var featuredVal=document.getElementById("productFeatured").value==="true";
-    if(!name||!price){toast("Name and price are required","error");return;}
-    var btn=document.getElementById("saveProductBtn");
-    btn.disabled=true;btn.textContent="Saving...";
-    try{
-      var hasFile=document.getElementById("productImage").files[0];
-      if(hasFile){
-        var body=new FormData();
-        body.append("name",name);
-        body.append("description",document.getElementById("productDesc").value);
-        body.append("price",price);
-        body.append("category",document.getElementById("productCategory").value);
-        body.append("stock",document.getElementById("productStock").value||0);
-        body.append("featured",featuredVal);
-        body.append("image",hasFile);
-        var res=await fetch("https://benakouture.onrender.com/api/products"+(id?"/"+id:""),{
-          method:id?"PUT":"POST",
-          headers:{Authorization:"Bearer "+getToken()},
-          body:body
-        });
-        if(!res.ok){var d=await res.json();throw new Error(d.error||"Failed");}
-      }else{
-        await fetchApi("/products"+(id?"/"+id:""),{
-          method:id?"PUT":"POST",
-          body:JSON.stringify({name:name,price:price,description:document.getElementById("productDesc").value,category:document.getElementById("productCategory").value,stock:document.getElementById("productStock").value||0,featured:featuredVal})
-        });
-      }
-      closeModal("productModal");
-      toast(id?"Product updated!":"Product added!");
-      loadProducts();
-    }catch(e){
-      toast(e.message||"Failed to save","error");
-    }finally{
-      btn.disabled=false;btn.textContent="Save Product";
-    }
-  }
-
-  function deleteProduct(id,name){
-    openConfirm("Delete "+name+"?","This product will be permanently removed.",async function(){
-      try{
-        await fetchApi("/products/"+id,{method:"DELETE"});
-        toast("Product deleted");
-        loadProducts();
-      }catch(e){toast(e.message,"error");}
+  // ── Image compression helper (canvas) ──
+  // Resizes & compresses an image File to max 1200px on longest side, quality 0.82, returns a Blob
+  function compressImage(file, maxPx, quality){
+    maxPx   = maxPx   || 1200;
+    quality = quality || 0.82;
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function(){
+        URL.revokeObjectURL(url);
+        var w = img.width, h = img.height;
+        if(w > maxPx || h > maxPx){
+          if(w >= h){ h = Math.round(h * maxPx / w); w = maxPx; }
+          else       { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function(blob){
+          if(blob) resolve(blob);
+          else     reject(new Error("Compression failed"));
+        }, "image/jpeg", quality);
+      };
+      img.onerror = reject;
+      img.src = url;
     });
   }
 
-  async function loadOrders(){
-    document.getElementById("ordersTable").innerHTML="<tr class=\"empty-row\"><td colspan=\"7\">Loading...</td></tr>";
+  // ── Save product — FIX: always send Authorization header correctly ──
+  async function saveProduct(){
+    var id    = document.getElementById("productId").value;
+    var name  = document.getElementById("productName").value.trim();
+    var price = document.getElementById("productPrice").value;
+    var featuredVal = document.getElementById("productFeatured").value === "true";
+    if(!name || !price){ toast("Name and price are required","error"); return; }
+
+    var btn = document.getElementById("saveProductBtn");
+    btn.disabled  = true;
+    btn.textContent = "Saving...";
+
     try{
-      var filter=document.getElementById("orderFilter").value;
-      var orders=await fetchApi("/orders/all").catch(function(){return[];});
-      if(filter)orders=orders.filter(function(o){return o.status===filter;});
-      document.getElementById("ordersTable").innerHTML=orders.length?orders.map(function(o){
-        var statusOpts=["pending","processing","shipped","delivered","cancelled"].map(function(s){
-          return "<option value=\""+s+"\""+(o.status===s?" selected":"")+">"+s.charAt(0).toUpperCase()+s.slice(1)+"</option>";
-        }).join("");
-        return "<tr>"+
-          "<td>#"+(o._id?o._id.slice(-6).toUpperCase():"-")+"</td>"+
-          "<td>"+(o.user?o.user.name||"-":"-")+"</td>"+
-          "<td>"+(o.items?o.items.length:0)+" item(s)</td>"+
-          "<td>GHS "+(o.total||0).toLocaleString()+"</td>"+
-          "<td><select class=\"status-select\" onchange=\"updateOrderStatus('"+o._id+"',this.value)\">"+statusOpts+"</select></td>"+
-          "<td>"+(o.createdAt?new Date(o.createdAt).toLocaleDateString():"-")+"</td>"+
-          "<td><button class=\"btn btn-ghost btn-sm\" onclick=\"viewOrder('"+o._id+"')\">View</button></td>"+
-          "</tr>";
-      }).join(""):"<tr class=\"empty-row\"><td colspan=\"7\">No orders found.</td></tr>";
+      var rawFile = document.getElementById("productImage").files[0];
+
+      if(rawFile){
+        // Compress before upload
+        var blob;
+        try{
+          blob = await compressImage(rawFile, 1200, 0.82);
+        }catch(ce){
+          blob = rawFile; // fallback: use original if compression fails
+        }
+
+        var body = new FormData();
+        body.append("name",        name);
+        body.append("description", document.getElementById("productDesc").value);
+        body.append("price",       price);
+        body.append("category",    document.getElementById("productCategory").value);
+        body.append("stock",       document.getElementById("productStock").value || 0);
+        body.append("featured",    featuredVal);
+        // Use compressed blob, keep original filename
+        body.append("image", blob, rawFile.name);
+
+        // ── FIX: get token the same way fetchApi does ──
+        var token = getToken();
+        var headers = {};
+        if(token) headers["Authorization"] = "Bearer " + token;
+
+        var res = await fetch(BASE_URL + "/api/products" + (id ? "/"+id : ""), {
+          method:  id ? "PUT" : "POST",
+          headers: headers,
+          body:    body
+        });
+        if(!res.ok){
+          var d = await res.json().catch(function(){ return {}; });
+          throw new Error(d.error || d.message || "Upload failed (status " + res.status + ")");
+        }
+      }else{
+        // No file — plain JSON update
+        await fetchApi("/products" + (id ? "/"+id : ""), {
+          method: id ? "PUT" : "POST",
+          body: JSON.stringify({
+            name:        name,
+            price:       price,
+            description: document.getElementById("productDesc").value,
+            category:    document.getElementById("productCategory").value,
+            stock:       document.getElementById("productStock").value || 0,
+            featured:    featuredVal
+          })
+        });
+      }
+
+      closeModal("productModal");
+      toast(id ? "Product updated!" : "Product added!");
+      loadProducts();
     }catch(e){
-      document.getElementById("ordersTable").innerHTML="<tr class=\"empty-row\"><td colspan=\"7\">Failed to load orders.</td></tr>";
+      toast(e.message || "Failed to save", "error");
+    }finally{
+      btn.disabled    = false;
+      btn.textContent = "Save Product";
     }
   }
 
-  async function updateOrderStatus(id,status){
+  function deleteProduct(id, name){
+    openConfirm("Delete "+name+"?","This product will be permanently removed.",async function(){
+      try{
+        await fetchApi("/products/"+id, {method:"DELETE"});
+        toast("Product deleted");
+        loadProducts();
+      }catch(e){ toast(e.message,"error"); }
+    });
+  }
+
+  // ─── Orders ───────────────────────────────────────────────────────────────
+  async function loadOrders(){
+    document.getElementById("ordersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"7\">Loading...</td></tr>";
     try{
-      await fetchApi("/orders/"+id+"/status",{method:"PUT",body:JSON.stringify({status:status})});
+      var filter = document.getElementById("orderFilter").value;
+      var orders = await fetchApi("/orders/all").catch(function(){ return []; });
+      if(filter) orders = orders.filter(function(o){ return o.status===filter; });
+      document.getElementById("ordersTable").innerHTML = orders.length
+        ? orders.map(function(o){
+            var statusOpts = ["pending","processing","shipped","delivered","cancelled"].map(function(s){
+              return "<option value=\""+s+"\""+(o.status===s?" selected":"")+">"+s.charAt(0).toUpperCase()+s.slice(1)+"</option>";
+            }).join("");
+            return "<tr>" +
+              "<td>#"+(o._id?o._id.slice(-6).toUpperCase():"-")+"</td>" +
+              "<td>"+(o.user?o.user.name||"-":"-")+"</td>" +
+              "<td>"+(o.items?o.items.length:0)+" item(s)</td>" +
+              "<td>GHS "+(o.total||0).toLocaleString()+"</td>" +
+              "<td><select class=\"status-select\" onchange=\"updateOrderStatus('"+o._id+"',this.value)\">"+statusOpts+"</select></td>" +
+              "<td>"+(o.createdAt?new Date(o.createdAt).toLocaleDateString():"-")+"</td>" +
+              "<td><button class=\"btn btn-ghost btn-sm\" onclick=\"viewOrder('"+o._id+"')\">View</button></td>" +
+              "</tr>";
+          }).join("")
+        : "<tr class=\"empty-row\"><td colspan=\"7\">No orders found.</td></tr>";
+    }catch(e){
+      document.getElementById("ordersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"7\">Failed to load orders.</td></tr>";
+    }
+  }
+
+  async function updateOrderStatus(id, status){
+    try{
+      await fetchApi("/orders/"+id+"/status", {method:"PUT", body:JSON.stringify({status:status})});
       toast("Order status updated");
-    }catch(e){toast(e.message,"error");}
+    }catch(e){ toast(e.message,"error"); }
   }
 
   async function viewOrder(id){
     try{
-      var order=await fetchApi("/orders/"+id);
-      var itemsHtml=(order.items||[]).map(function(i){
+      var order = await fetchApi("/orders/"+id);
+      var itemsHtml = (order.items||[]).map(function(i){
         return "<div style=\"display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);\"><span>"+i.name+" x"+i.quantity+"</span><span style=\"color:var(--wine);\">GHS "+(i.price*i.quantity).toLocaleString()+"</span></div>";
       }).join("");
-      document.getElementById("orderDetailContent").innerHTML=
-        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">ORDER ID</div><div style=\"color:var(--wine);\">#"+(order._id?order._id.slice(-6).toUpperCase():"-")+"</div></div>"+
-        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">CUSTOMER</div><div>"+(order.user?order.user.name||"-":"-")+" - "+(order.user?order.user.email||"-":"-")+"</div></div>"+
-        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;\">ITEMS</div>"+itemsHtml+"</div>"+
+      document.getElementById("orderDetailContent").innerHTML =
+        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">ORDER ID</div><div style=\"color:var(--wine);\">#"+(order._id?order._id.slice(-6).toUpperCase():"-")+"</div></div>" +
+        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">CUSTOMER</div><div>"+(order.user?order.user.name||"-":"-")+" — "+(order.user?order.user.email||"-":"-")+"</div></div>" +
+        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;\">ITEMS</div>"+itemsHtml+"</div>" +
         "<div style=\"display:flex;justify-content:space-between;margin-top:12px;font-weight:600;\"><span>Total</span><span style=\"color:var(--wine);\">GHS "+(order.total||0).toLocaleString()+"</span></div>";
       document.getElementById("orderModal").classList.add("open");
-    }catch(e){toast("Failed to load order","error");}
+    }catch(e){ toast("Failed to load order","error"); }
   }
 
-  var allUsers=[];
+  // ─── Users ────────────────────────────────────────────────────────────────
+  var allUsers = [];
   async function loadUsers(){
-    document.getElementById("usersTable").innerHTML="<tr class=\"empty-row\"><td colspan=\"5\">Loading...</td></tr>";
+    document.getElementById("usersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"5\">Loading...</td></tr>";
     try{
-      allUsers=await fetchApi("/auth/users");
+      allUsers = await fetchApi("/auth/users");
       renderUsers(allUsers);
     }catch(e){
-      document.getElementById("usersTable").innerHTML="<tr class=\"empty-row\"><td colspan=\"5\">Failed to load users.</td></tr>";
+      document.getElementById("usersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"5\">Failed to load users.</td></tr>";
     }
   }
 
   function renderUsers(users){
-    document.getElementById("usersTable").innerHTML=users.length?users.map(function(u){
-      return "<tr>"+
-        "<td>"+(u.name||"-")+"</td>"+
-        "<td style=\"color:var(--text-muted);\">"+u.email+"</td>"+
-        "<td>"+(u.isAdmin?"<span class=\"badge badge-warning\">Admin</span>":"<span class=\"badge badge-muted\">User</span>")+"</td>"+
-        "<td style=\"color:var(--text-muted);font-size:0.8rem;\">"+(u.createdAt?new Date(u.createdAt).toLocaleDateString():"-")+"</td>"+
-        "<td>"+(!u.isAdmin?"<button class=\"btn btn-danger btn-sm\" onclick=\"deleteUser('"+u._id+"','"+(u.name||"").replace(/'/g,"")+"')\">Delete</button>":"<span style=\"color:var(--text-muted);font-size:0.78rem;\">Protected</span>")+"</td>"+
-        "</tr>";
-    }).join(""):"<tr class=\"empty-row\"><td colspan=\"5\">No users found.</td></tr>";
+    document.getElementById("usersTable").innerHTML = users.length
+      ? users.map(function(u){
+          return "<tr>" +
+            "<td>"+(u.name||"-")+"</td>" +
+            "<td style=\"color:var(--text-muted);\">"+u.email+"</td>" +
+            "<td>"+(u.isAdmin?"<span class=\"badge badge-warning\">Admin</span>":"<span class=\"badge badge-muted\">User</span>")+"</td>" +
+            "<td style=\"color:var(--text-muted);font-size:0.8rem;\">"+(u.createdAt?new Date(u.createdAt).toLocaleDateString():"-")+"</td>" +
+            "<td>"+(!u.isAdmin
+              ? "<button class=\"btn btn-danger btn-sm\" onclick=\"deleteUser('"+u._id+"','"+(u.name||"").replace(/'/g,"")+"')\">Delete</button>"
+              : "<span style=\"color:var(--text-muted);font-size:0.78rem;\">Protected</span>")+"</td>" +
+            "</tr>";
+        }).join("")
+      : "<tr class=\"empty-row\"><td colspan=\"5\">No users found.</td></tr>";
   }
 
-  document.getElementById("userSearch").addEventListener("input",function(e){
-    var q=e.target.value.toLowerCase();
-    renderUsers(allUsers.filter(function(u){return(u.name&&u.name.toLowerCase().includes(q))||(u.email&&u.email.toLowerCase().includes(q));}));
+  document.getElementById("userSearch").addEventListener("input", function(e){
+    var q = e.target.value.toLowerCase();
+    renderUsers(allUsers.filter(function(u){
+      return (u.name&&u.name.toLowerCase().includes(q)) || (u.email&&u.email.toLowerCase().includes(q));
+    }));
   });
 
-  function deleteUser(id,name){
+  function deleteUser(id, name){
     openConfirm("Delete user "+name+"?","Their account and data will be permanently removed.",async function(){
       try{
-        await fetchApi("/auth/admin/delete-user/"+id,{method:"DELETE"});
+        await fetchApi("/auth/admin/delete-user/"+id, {method:"DELETE"});
         toast("User deleted");
         loadUsers();
-      }catch(e){toast(e.message,"error");}
+      }catch(e){ toast(e.message,"error"); }
     });
   }
 
-  function loadExhibition(){
-    var media=JSON.parse(localStorage.getItem("bena_exhibition")||"[]");
-    var grid=document.getElementById("exhibitionGrid");
-    if(!media.length){grid.innerHTML="<div class=\"loading\">No media yet. Upload images or videos above.</div>";return;}
-    grid.innerHTML=media.map(function(m,i){
-      return "<div class=\"exhibition-item\">"+
-         (m.type==="video"?"<video src=\""+m.src+"\" muted loop playsinline></video>":"<img src=\""+m.src+"\" alt=\"Exhibition "+(i+1)+"\">")+
-    "<button class=\"delete-media\" onclick=\"deleteMedia("+i+")\">x</button>"
-        "<span class=\"media-type-badge\">"+m.type+"</span>"+
-        "</div>";
-    }).join("");
-  }
+  // ─── Exhibition — FIX: use backend API, not localStorage ─────────────────
+  //
+  // This is the core fix for the cross-device sync problem.
+  // localStorage is stored in the browser on ONE device only — it will NEVER
+  // appear on another phone or computer.
+  // We now upload to the server and fetch from the server, so every device
+  // sees the same media.
+  //
+  // IMPORTANT: your backend needs a route like:
+  //   GET  /api/exhibition           → returns [{_id, url, type, name}]
+  //   POST /api/exhibition           → multipart/form-data "media" field, returns saved item
+  //   DELETE /api/exhibition/:id     → deletes item
+  //
+  // If your backend doesn't have this yet, see the comment at the bottom of
+  // this script for a minimal Express implementation to add to your server.
 
-  function deleteMedia(index){
-    var media=JSON.parse(localStorage.getItem("bena_exhibition")||"[]");
-    media.splice(index,1);
-    localStorage.setItem("bena_exhibition",JSON.stringify(media));
-    loadExhibition();
-    toast("Media removed");
-  }
-
-  document.getElementById("mediaInput").addEventListener("change",async function(e){
-    var files=Array.from(e.target.files);
-    if(!files.length)return;
-    document.getElementById("uploadProgress").style.display="block";
-    var media=JSON.parse(localStorage.getItem("bena_exhibition")||"[]");
-    for(var f=0;f<files.length;f++){
-      var file=files[f];
-      await new Promise(function(resolve){
-        var reader=new FileReader();
-        reader.onload=function(ev){
-          media.push({src:ev.target.result,type:file.type.startsWith("video")?"video":"image",name:file.name});
-          resolve();
-        };
-        reader.readAsDataURL(file);
-      });
+  async function loadExhibition(){
+    var grid = document.getElementById("exhibitionGrid");
+    grid.innerHTML = "<div class=\"loading\">Loading...</div>";
+    try{
+      var items = await fetchApi("/exhibition");
+      if(!items.length){
+        grid.innerHTML = "<div class=\"loading\">No media yet. Upload images or videos above.</div>";
+        return;
+      }
+      grid.innerHTML = items.map(function(m){
+        var src = BASE_URL + m.url;
+        return "<div class=\"exhibition-item\">" +
+          (m.type==="video"
+            ? "<video src=\""+src+"\" muted loop playsinline></video>"
+            : "<img src=\""+src+"\" alt=\"Exhibition\">") +
+          "<button class=\"delete-media\" onclick=\"deleteMedia('"+m._id+"')\">✕</button>" +
+          "<span class=\"media-type-badge\">"+m.type+"</span>" +
+          "</div>";
+      }).join("");
+    }catch(e){
+      // Fallback: if no backend route yet, show a helpful message
+      grid.innerHTML = "<div class=\"loading\" style=\"color:#e06060;\">Could not load exhibition media.<br><small>Make sure your server has a <code>/api/exhibition</code> route.</small></div>";
     }
-    localStorage.setItem("bena_exhibition",JSON.stringify(media));
-    document.getElementById("uploadProgress").style.display="none";
+  }
+
+  async function deleteMedia(id){
+    try{
+      await fetchApi("/exhibition/"+id, {method:"DELETE"});
+      toast("Media removed");
+      loadExhibition();
+    }catch(e){ toast(e.message || "Failed to delete","error"); }
+  }
+
+  document.getElementById("mediaInput").addEventListener("change", async function(e){
+    var files = Array.from(e.target.files);
+    if(!files.length) return;
+
+    var progressText = document.getElementById("uploadProgress");
+    var progressBar  = document.getElementById("uploadProgressBar");
+    var progressFill = document.getElementById("uploadProgressFill");
+
+    progressText.style.display = "block";
+    progressBar.style.display  = "block";
+    progressFill.style.width   = "0%";
+
+    var token = getToken();
+    var headers = {};
+    if(token) headers["Authorization"] = "Bearer " + token;
+
+    var done = 0;
+    var failed = 0;
+
+    for(var f = 0; f < files.length; f++){
+      var file = files[f];
+      progressText.textContent = "Uploading " + (f+1) + " of " + files.length + "…";
+      try{
+        var body = new FormData();
+        if(file.type.startsWith("image/")){
+          // Compress images before upload (max 1200px, 82% quality)
+          var blob;
+          try{ blob = await compressImage(file, 1200, 0.82); }
+          catch(ce){ blob = file; }
+          body.append("media", blob, file.name);
+        }else{
+          // Videos: upload as-is
+          body.append("media", file, file.name);
+        }
+        var res = await fetch(BASE_URL + "/api/exhibition", {
+          method:  "POST",
+          headers: headers,
+          body:    body
+        });
+        if(!res.ok){
+          var d = await res.json().catch(function(){ return {}; });
+          throw new Error(d.error || d.message || "Upload failed");
+        }
+        done++;
+      }catch(err){
+        console.error("Failed to upload", file.name, err);
+        failed++;
+      }
+      progressFill.style.width = Math.round(((f+1)/files.length)*100) + "%";
+    }
+
+    setTimeout(function(){
+      progressText.style.display = "none";
+      progressBar.style.display  = "none";
+    }, 800);
+
+    if(done > 0)    toast(done + " file(s) uploaded!");
+    if(failed > 0)  toast(failed + " file(s) failed to upload","error");
     loadExhibition();
-    toast(files.length+" file(s) uploaded!");
-    e.target.value="";
+    e.target.value = "";
   });
 
+  // ─── Settings ─────────────────────────────────────────────────────────────
   async function loadSettings(){
     try{
-      var s=await fetchApi("/settings");
-      if(s.deliveryFee!==undefined)document.getElementById("settingDeliveryFee").value=s.deliveryFee;
-      if(s.pickupAddress)document.getElementById("settingPickupAddress").value=s.pickupAddress;
-      if(s.paystackKey)document.getElementById("settingPaystackKey").value=s.paystackKey;
-      if(s.adminEmail)document.getElementById("settingAdminEmail").value=s.adminEmail;
+      var s = await fetchApi("/settings");
+      if(s.deliveryFee!==undefined) document.getElementById("settingDeliveryFee").value  = s.deliveryFee;
+      if(s.pickupAddress)           document.getElementById("settingPickupAddress").value = s.pickupAddress;
+      if(s.paystackKey)             document.getElementById("settingPaystackKey").value   = s.paystackKey;
+      if(s.adminEmail)              document.getElementById("settingAdminEmail").value     = s.adminEmail;
     }catch(e){}
   }
 
@@ -634,49 +799,92 @@
       await fetchApi("/settings",{
         method:"PUT",
         body:JSON.stringify({
-          deliveryFee:Number(document.getElementById("settingDeliveryFee").value)||0,
-          pickupAddress:document.getElementById("settingPickupAddress").value,
-          paystackKey:document.getElementById("settingPaystackKey").value,
-          adminEmail:document.getElementById("settingAdminEmail").value
+          deliveryFee:    Number(document.getElementById("settingDeliveryFee").value)||0,
+          pickupAddress:  document.getElementById("settingPickupAddress").value,
+          paystackKey:    document.getElementById("settingPaystackKey").value,
+          adminEmail:     document.getElementById("settingAdminEmail").value
         })
       });
-      var msg=document.getElementById("settingsMsg");
-      msg.textContent="Settings saved!";
-      msg.style.color="#5dba8a";
-      msg.style.display="block";
-      setTimeout(function(){msg.style.display="none";},3000);
+      var msg = document.getElementById("settingsMsg");
+      msg.textContent = "Settings saved!";
+      msg.style.color = "#5dba8a";
+      msg.style.display = "block";
+      setTimeout(function(){ msg.style.display="none"; }, 3000);
     }catch(e){
-      var msg=document.getElementById("settingsMsg");
-      msg.textContent="Failed to save settings";
-      msg.style.color="#e06060";
-      msg.style.display="block";
+      var msg = document.getElementById("settingsMsg");
+      msg.textContent = "Failed to save settings";
+      msg.style.color = "#e06060";
+      msg.style.display = "block";
     }
   }
 
+  // ─── Helpers ──────────────────────────────────────────────────────────────
   function statusBadge(status){
-    var map={pending:"badge-warning",processing:"badge-info",shipped:"badge-info",delivered:"badge-success",cancelled:"badge-danger"};
+    var map = {pending:"badge-warning",processing:"badge-info",shipped:"badge-info",delivered:"badge-success",cancelled:"badge-danger"};
     return "<span class=\"badge "+(map[status]||"badge-muted")+"\">"+(status||"pending")+"</span>";
   }
 
-  function closeModal(id){document.getElementById(id).classList.remove("open");}
+  function closeModal(id){ document.getElementById(id).classList.remove("open"); }
 
-  var confirmCallback=null;
-  function openConfirm(title,msg,cb){
-    document.getElementById("confirmTitle").textContent=title;
-    document.getElementById("confirmMsg").textContent=msg;
-    confirmCallback=cb;
+  var confirmCallback = null;
+  function openConfirm(title, msg, cb){
+    document.getElementById("confirmTitle").textContent = title;
+    document.getElementById("confirmMsg").textContent   = msg;
+    confirmCallback = cb;
     document.getElementById("confirmModal").classList.add("open");
   }
-  document.getElementById("confirmYes").addEventListener("click",function(){
+  document.getElementById("confirmYes").addEventListener("click", function(){
     closeModal("confirmModal");
-    if(confirmCallback)confirmCallback();
+    if(confirmCallback) confirmCallback();
   });
 
   document.querySelectorAll(".modal-overlay").forEach(function(overlay){
-    overlay.addEventListener("click",function(e){if(e.target===overlay)overlay.classList.remove("open");});
+    overlay.addEventListener("click", function(e){ if(e.target===overlay) overlay.classList.remove("open"); });
   });
 
+  // ─── Boot ─────────────────────────────────────────────────────────────────
   loadOverview();
+
+  /*
+  ═══════════════════════════════════════════════════════════════════════════
+  BACKEND ROUTES NEEDED FOR EXHIBITION (add to your Express server if missing)
+  ═══════════════════════════════════════════════════════════════════════════
+
+  const multer  = require('multer');
+  const upload  = multer({ dest: 'uploads/exhibition/' });
+  const Exhibition = require('./models/Exhibition'); // Mongoose model below
+
+  // GET all
+  router.get('/exhibition', async (req, res) => {
+    const items = await Exhibition.find().sort({ createdAt: -1 });
+    res.json(items);
+  });
+
+  // POST new (admin only)
+  router.post('/exhibition', protect, adminOnly, upload.single('media'), async (req, res) => {
+    const type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
+    const item = await Exhibition.create({
+      url:  '/uploads/exhibition/' + req.file.filename,
+      type: type,
+      name: req.file.originalname
+    });
+    res.json(item);
+  });
+
+  // DELETE (admin only)
+  router.delete('/exhibition/:id', protect, adminOnly, async (req, res) => {
+    await Exhibition.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  });
+
+  // Exhibition Mongoose model:
+  // const ExhibitionSchema = new mongoose.Schema({
+  //   url:  String,
+  //   type: { type: String, enum: ['image','video'], default: 'image' },
+  //   name: String
+  // }, { timestamps: true });
+  ═══════════════════════════════════════════════════════════════════════════
+  */
 </script>
 </body>
 </html>
