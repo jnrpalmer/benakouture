@@ -318,29 +318,24 @@
 
 <script src="js/app.js"></script>
 <script>
-  // ─── Constants ────────────────────────────────────────────────────────────
   var BASE_URL = "https://benakouture.onrender.com";
 
-  // ─── Auth guard ───────────────────────────────────────────────────────────
   if(!requireAuth()) throw new Error("redirect");
-  if(!isAdmin()){ window.location.href="home.html"; throw new Error("admin only"); }
+  if(!isAdmin()){ window.location.href = "home.html"; throw new Error("admin only"); }
 
   var user = getUser();
   if(user) document.getElementById("adminName").textContent = user.name || "Admin";
 
-  // ─── Sidebar toggle ───────────────────────────────────────────────────────
   document.getElementById("sidebarToggle").addEventListener("click", function(){
     document.getElementById("sidebar").classList.toggle("open");
   });
 
-  // ─── Logout ───────────────────────────────────────────────────────────────
   document.getElementById("logoutBtn").addEventListener("click", async function(){
     await fetchApi("/auth/logout", {method:"POST"}).catch(function(){});
     setToken(null); setUser(null);
     window.location.href = "login.html";
   });
 
-  // ─── Toast ────────────────────────────────────────────────────────────────
   function toast(msg, type){
     if(!type) type = "success";
     var t = document.getElementById("toast");
@@ -349,21 +344,19 @@
     setTimeout(function(){ t.classList.remove("show"); }, 3500);
   }
 
-  // ─── Page navigation ──────────────────────────────────────────────────────
   function showPage(name, el){
     document.querySelectorAll(".page").forEach(function(p){ p.classList.remove("active"); });
     document.querySelectorAll(".nav-item").forEach(function(n){ n.classList.remove("active"); });
     document.getElementById("page-" + name).classList.add("active");
     if(el) el.classList.add("active");
-    if(name === "products")    loadProducts();
-    if(name === "orders")      loadOrders();
-    if(name === "users")       loadUsers();
-    if(name === "overview")    loadOverview();
-    if(name === "exhibition")  loadExhibition();
-    if(name === "settings")    loadSettings();
+    if(name === "products")   loadProducts();
+    if(name === "orders")     loadOrders();
+    if(name === "users")      loadUsers();
+    if(name === "overview")   loadOverview();
+    if(name === "exhibition") loadExhibition();
+    if(name === "settings")   loadSettings();
   }
 
-  // ─── Overview ─────────────────────────────────────────────────────────────
   async function loadOverview(){
     try{
       var results = await Promise.all([
@@ -394,7 +387,6 @@
     }catch(e){ console.error(e); }
   }
 
-  // ─── Products ─────────────────────────────────────────────────────────────
   var allProducts = [];
   async function loadProducts(){
     document.getElementById("productsGrid").innerHTML = "<div class=\"loading\">Loading...</div>";
@@ -416,7 +408,7 @@
         "<div class=\"product-info\">" +
         "<div class=\"product-name\">"+p.name+"</div>" +
         "<div class=\"product-price\">GHS "+Number(p.price).toLocaleString()+"</div>" +
-        "<div style=\"font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;\">"+(p.featured?"⭐ Featured":"Not featured")+"</div>" +
+        "<div style=\"font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;\">"+(p.featured?"&#11088; Featured":"Not featured")+"</div>" +
         "<div class=\"product-actions\">" +
         "<button class=\"btn btn-primary btn-sm\" style=\"flex:1\" onclick=\"editProduct('"+p._id+"')\">Edit</button>" +
         "<button class=\"btn btn-danger btn-sm\" onclick=\"deleteProduct('"+p._id+"','"+p.name.replace(/'/g,"")+"')\">Del</button>" +
@@ -447,7 +439,6 @@
     document.getElementById("productModal").classList.add("open");
   }
 
-  // Preview selected product image
   document.getElementById("productImage").addEventListener("change", function(e){
     var file = e.target.files[0];
     if(file){
@@ -464,8 +455,6 @@
     if(p) openProductModal(p);
   }
 
-  // ── Image compression helper (canvas) ──
-  // Resizes & compresses an image File to max 1200px on longest side, quality 0.82, returns a Blob
   function compressImage(file, maxPx, quality){
     maxPx   = maxPx   || 1200;
     quality = quality || 0.82;
@@ -493,29 +482,23 @@
     });
   }
 
-  // ── Save product — FIX: always send Authorization header correctly ──
   async function saveProduct(){
-    var id    = document.getElementById("productId").value;
-    var name  = document.getElementById("productName").value.trim();
-    var price = document.getElementById("productPrice").value;
+    var id          = document.getElementById("productId").value;
+    var name        = document.getElementById("productName").value.trim();
+    var price       = document.getElementById("productPrice").value;
     var featuredVal = document.getElementById("productFeatured").value === "true";
     if(!name || !price){ toast("Name and price are required","error"); return; }
 
     var btn = document.getElementById("saveProductBtn");
-    btn.disabled  = true;
+    btn.disabled    = true;
     btn.textContent = "Saving...";
 
     try{
       var rawFile = document.getElementById("productImage").files[0];
-
       if(rawFile){
-        // Compress before upload
         var blob;
-        try{
-          blob = await compressImage(rawFile, 1200, 0.82);
-        }catch(ce){
-          blob = rawFile; // fallback: use original if compression fails
-        }
+        try{ blob = await compressImage(rawFile, 1200, 0.82); }
+        catch(ce){ blob = rawFile; }
 
         var body = new FormData();
         body.append("name",        name);
@@ -524,10 +507,8 @@
         body.append("category",    document.getElementById("productCategory").value);
         body.append("stock",       document.getElementById("productStock").value || 0);
         body.append("featured",    featuredVal);
-        // Use compressed blob, keep original filename
-        body.append("image", blob, rawFile.name);
+        body.append("image",       blob, rawFile.name);
 
-        // ── FIX: get token the same way fetchApi does ──
         var token = getToken();
         var headers = {};
         if(token) headers["Authorization"] = "Bearer " + token;
@@ -542,7 +523,6 @@
           throw new Error(d.error || d.message || "Upload failed (status " + res.status + ")");
         }
       }else{
-        // No file — plain JSON update
         await fetchApi("/products" + (id ? "/"+id : ""), {
           method: id ? "PUT" : "POST",
           body: JSON.stringify({
@@ -555,12 +535,11 @@
           })
         });
       }
-
       closeModal("productModal");
       toast(id ? "Product updated!" : "Product added!");
       loadProducts();
     }catch(e){
-      toast(e.message || "Failed to save", "error");
+      toast(e.message || "Failed to save","error");
     }finally{
       btn.disabled    = false;
       btn.textContent = "Save Product";
@@ -577,7 +556,6 @@
     });
   }
 
-  // ─── Orders ───────────────────────────────────────────────────────────────
   async function loadOrders(){
     document.getElementById("ordersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"7\">Loading...</td></tr>";
     try{
@@ -620,14 +598,13 @@
       }).join("");
       document.getElementById("orderDetailContent").innerHTML =
         "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">ORDER ID</div><div style=\"color:var(--wine);\">#"+(order._id?order._id.slice(-6).toUpperCase():"-")+"</div></div>" +
-        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">CUSTOMER</div><div>"+(order.user?order.user.name||"-":"-")+" — "+(order.user?order.user.email||"-":"-")+"</div></div>" +
+        "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);\">CUSTOMER</div><div>"+(order.user?order.user.name||"-":"-")+" - "+(order.user?order.user.email||"-":"-")+"</div></div>" +
         "<div style=\"margin-bottom:16px;\"><div style=\"font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;\">ITEMS</div>"+itemsHtml+"</div>" +
         "<div style=\"display:flex;justify-content:space-between;margin-top:12px;font-weight:600;\"><span>Total</span><span style=\"color:var(--wine);\">GHS "+(order.total||0).toLocaleString()+"</span></div>";
       document.getElementById("orderModal").classList.add("open");
     }catch(e){ toast("Failed to load order","error"); }
   }
 
-  // ─── Users ────────────────────────────────────────────────────────────────
   var allUsers = [];
   async function loadUsers(){
     document.getElementById("usersTable").innerHTML = "<tr class=\"empty-row\"><td colspan=\"5\">Loading...</td></tr>";
@@ -658,7 +635,7 @@
   document.getElementById("userSearch").addEventListener("input", function(e){
     var q = e.target.value.toLowerCase();
     renderUsers(allUsers.filter(function(u){
-      return (u.name&&u.name.toLowerCase().includes(q)) || (u.email&&u.email.toLowerCase().includes(q));
+      return (u.name&&u.name.toLowerCase().includes(q))||(u.email&&u.email.toLowerCase().includes(q));
     }));
   });
 
@@ -671,22 +648,6 @@
       }catch(e){ toast(e.message,"error"); }
     });
   }
-
-  // ─── Exhibition — FIX: use backend API, not localStorage ─────────────────
-  //
-  // This is the core fix for the cross-device sync problem.
-  // localStorage is stored in the browser on ONE device only — it will NEVER
-  // appear on another phone or computer.
-  // We now upload to the server and fetch from the server, so every device
-  // sees the same media.
-  //
-  // IMPORTANT: your backend needs a route like:
-  //   GET  /api/exhibition           → returns [{_id, url, type, name}]
-  //   POST /api/exhibition           → multipart/form-data "media" field, returns saved item
-  //   DELETE /api/exhibition/:id     → deletes item
-  //
-  // If your backend doesn't have this yet, see the comment at the bottom of
-  // this script for a minimal Express implementation to add to your server.
 
   async function loadExhibition(){
     var grid = document.getElementById("exhibitionGrid");
@@ -703,13 +664,12 @@
           (m.type==="video"
             ? "<video src=\""+src+"\" muted loop playsinline></video>"
             : "<img src=\""+src+"\" alt=\"Exhibition\">") +
-          "<button class=\"delete-media\" onclick=\"deleteMedia('"+m._id+"')\">✕</button>" +
+          "<button class=\"delete-media\" onclick=\"deleteMedia('"+m._id+"')\">&#x2715;</button>" +
           "<span class=\"media-type-badge\">"+m.type+"</span>" +
           "</div>";
       }).join("");
     }catch(e){
-      // Fallback: if no backend route yet, show a helpful message
-      grid.innerHTML = "<div class=\"loading\" style=\"color:#e06060;\">Could not load exhibition media.<br><small>Make sure your server has a <code>/api/exhibition</code> route.</small></div>";
+      grid.innerHTML = "<div class=\"loading\" style=\"color:#e06060;\">Could not load exhibition media.</div>";
     }
   }
 
@@ -737,22 +697,20 @@
     var headers = {};
     if(token) headers["Authorization"] = "Bearer " + token;
 
-    var done = 0;
+    var done   = 0;
     var failed = 0;
 
     for(var f = 0; f < files.length; f++){
       var file = files[f];
-      progressText.textContent = "Uploading " + (f+1) + " of " + files.length + "…";
+      progressText.textContent = "Uploading " + (f+1) + " of " + files.length + "...";
       try{
         var body = new FormData();
         if(file.type.startsWith("image/")){
-          // Compress images before upload (max 1200px, 82% quality)
           var blob;
           try{ blob = await compressImage(file, 1200, 0.82); }
           catch(ce){ blob = file; }
           body.append("media", blob, file.name);
         }else{
-          // Videos: upload as-is
           body.append("media", file, file.name);
         }
         var res = await fetch(BASE_URL + "/api/exhibition", {
@@ -777,13 +735,12 @@
       progressBar.style.display  = "none";
     }, 800);
 
-    if(done > 0)    toast(done + " file(s) uploaded!");
-    if(failed > 0)  toast(failed + " file(s) failed to upload","error");
+    if(done > 0)   toast(done + " file(s) uploaded!");
+    if(failed > 0) toast(failed + " file(s) failed to upload","error");
     loadExhibition();
     e.target.value = "";
   });
 
-  // ─── Settings ─────────────────────────────────────────────────────────────
   async function loadSettings(){
     try{
       var s = await fetchApi("/settings");
@@ -799,26 +756,25 @@
       await fetchApi("/settings",{
         method:"PUT",
         body:JSON.stringify({
-          deliveryFee:    Number(document.getElementById("settingDeliveryFee").value)||0,
-          pickupAddress:  document.getElementById("settingPickupAddress").value,
-          paystackKey:    document.getElementById("settingPaystackKey").value,
-          adminEmail:     document.getElementById("settingAdminEmail").value
+          deliveryFee:   Number(document.getElementById("settingDeliveryFee").value)||0,
+          pickupAddress: document.getElementById("settingPickupAddress").value,
+          paystackKey:   document.getElementById("settingPaystackKey").value,
+          adminEmail:    document.getElementById("settingAdminEmail").value
         })
       });
       var msg = document.getElementById("settingsMsg");
-      msg.textContent = "Settings saved!";
-      msg.style.color = "#5dba8a";
+      msg.textContent   = "Settings saved!";
+      msg.style.color   = "#5dba8a";
       msg.style.display = "block";
-      setTimeout(function(){ msg.style.display="none"; }, 3000);
+      setTimeout(function(){ msg.style.display = "none"; }, 3000);
     }catch(e){
       var msg = document.getElementById("settingsMsg");
-      msg.textContent = "Failed to save settings";
-      msg.style.color = "#e06060";
+      msg.textContent   = "Failed to save settings";
+      msg.style.color   = "#e06060";
       msg.style.display = "block";
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
   function statusBadge(status){
     var map = {pending:"badge-warning",processing:"badge-info",shipped:"badge-info",delivered:"badge-success",cancelled:"badge-danger"};
     return "<span class=\"badge "+(map[status]||"badge-muted")+"\">"+(status||"pending")+"</span>";
@@ -833,6 +789,7 @@
     confirmCallback = cb;
     document.getElementById("confirmModal").classList.add("open");
   }
+
   document.getElementById("confirmYes").addEventListener("click", function(){
     closeModal("confirmModal");
     if(confirmCallback) confirmCallback();
@@ -842,49 +799,7 @@
     overlay.addEventListener("click", function(e){ if(e.target===overlay) overlay.classList.remove("open"); });
   });
 
-  // ─── Boot ─────────────────────────────────────────────────────────────────
   loadOverview();
-
-  /*
-  ═══════════════════════════════════════════════════════════════════════════
-  BACKEND ROUTES NEEDED FOR EXHIBITION (add to your Express server if missing)
-  ═══════════════════════════════════════════════════════════════════════════
-
-  const multer  = require('multer');
-  const upload  = multer({ dest: 'uploads/exhibition/' });
-  const Exhibition = require('./models/Exhibition'); // Mongoose model below
-
-  // GET all
-  router.get('/exhibition', async (req, res) => {
-    const items = await Exhibition.find().sort({ createdAt: -1 });
-    res.json(items);
-  });
-
-  // POST new (admin only)
-  router.post('/exhibition', protect, adminOnly, upload.single('media'), async (req, res) => {
-    const type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
-    const item = await Exhibition.create({
-      url:  '/uploads/exhibition/' + req.file.filename,
-      type: type,
-      name: req.file.originalname
-    });
-    res.json(item);
-  });
-
-  // DELETE (admin only)
-  router.delete('/exhibition/:id', protect, adminOnly, async (req, res) => {
-    await Exhibition.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  });
-
-  // Exhibition Mongoose model:
-  // const ExhibitionSchema = new mongoose.Schema({
-  //   url:  String,
-  //   type: { type: String, enum: ['image','video'], default: 'image' },
-  //   name: String
-  // }, { timestamps: true });
-  ═══════════════════════════════════════════════════════════════════════════
-  */
 </script>
 </body>
 </html>
